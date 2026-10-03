@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3E7C4"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#AA820A"/>
+    </linearGradient>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F4E78"/>
+      <stop offset="100%" stop-color="#0F273E"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer Gold & Navy Rings -->
+  <circle cx="100" cy="100" r="96" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="4"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.6"/>
+  <circle cx="100" cy="100" r="78" fill="#0B1B2B" stroke="#D4AF37" stroke-width="1"/>
+
+  <!-- Quadrant Dividers -->
+  <line x1="100" y1="24" x2="100" y2="176" stroke="#D4AF37" stroke-width="2" stroke-dasharray="4 2" opacity="0.7"/>
+  <line x1="24" y1="100" x2="176" y2="100" stroke="#D4AF37" stroke-width="2" stroke-dasharray="4 2" opacity="0.7"/>
+
+  <!-- Q1 (Top-Left): Botanical / Leaf (Herbarium) -->
+  <g transform="translate(56, 56)">
+    <path d="M-2,14 C-16,4 -14,-16 12,-18 C12,10 6,18 -2,14 Z" fill="#10B981" stroke="#047857" stroke-width="1.5"/>
+    <path d="M-2,14 Q2,0 12,-18" stroke="#064E3B" stroke-width="1.5" fill="none"/>
+    <path d="M2,4 Q8,2 10,-3" stroke="#064E3B" stroke-width="1" fill="none"/>
+    <path d="M-1,9 Q-6,6 -8,2" stroke="#064E3B" stroke-width="1" fill="none"/>
+  </g>
+
+  <!-- Q2 (Top-Right): Zoological / Butterfly (Zoologi) -->
+  <g transform="translate(144, 56)">
+    <!-- Wings -->
+    <path d="M-3,-2 Q-18,-18 -22,-4 Q-16,10 -3,2 Q16,10 22,-4 Q18,-18 3,-2 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1.5"/>
+    <path d="M-3,2 Q-14,14 -12,20 Q-2,18 -2,6 Q2,18 12,20 Q14,14 3,2 Z" fill="#60A5FA" stroke="#2563EB" stroke-width="1.2"/>
+    <!-- Body -->
+    <ellipse cx="0" cy="4" rx="2.5" ry="10" fill="#1E293B"/>
+    <circle cx="0" cy="-8" r="3" fill="#D4AF37"/>
+    <!-- Antennae -->
+    <path d="M-1,-10 Q-5,-16 -8,-16" stroke="#D4AF37" stroke-width="1" fill="none"/>
+    <path d="M1,-10 Q5,-16 8,-16" stroke="#D4AF37" stroke-width="1" fill="none"/>
+  </g>
+
+  <!-- Q3 (Bottom-Left): Geological / Fossil Wood (Fosil Kayu) -->
+  <g transform="translate(56, 144)">
+    <!-- Concentric Growth Rings & Wood Rays -->
+    <circle cx="0" cy="0" r="20" fill="#B45309" stroke="#F59E0B" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="15" fill="#92400E" stroke="#FBBF24" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="9" fill="#78350F" stroke="#FDE68A" stroke-width="1"/>
+    <circle cx="0" cy="0" r="3.5" fill="#FEF3C7"/>
+    <!-- Radiating Ray Lines -->
+    <line x1="-18" y1="0" x2="18" y2="0" stroke="#FDE68A" stroke-width="1" opacity="0.7"/>
+    <line x1="0" y1="-18" x2="0" y2="18" stroke="#FDE68A" stroke-width="1" opacity="0.7"/>
+    <line x1="-13" y1="-13" x2="13" y2="13" stroke="#FDE68A" stroke-width="1" opacity="0.7"/>
+    <line x1="13" y1="-13" x2="-13" y2="13" stroke="#FDE68A" stroke-width="1" opacity="0.7"/>
+  </g>
+
+  <!-- Q4 (Bottom-Right): Microbial / DNA Structure (InaCC / Mikroba) -->
+  <g transform="translate(144, 144)">
+    <!-- Double Helix Strands -->
+    <path d="M-12,-16 Q0,-8 12,-16 Q-2,0 -12,16 Q0,8 12,16" stroke="#EC4899" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M12,-16 Q0,-8 -12,-16 Q2,0 12,16 Q0,8 -12,16" stroke="#A855F7" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Base Pairs -->
+    <line x1="-8" y1="-12" x2="8" y2="-12" stroke="#FBCFE8" stroke-width="1.5"/>
+    <line x1="-4" y1="-4" x2="4" y2="-4" stroke="#FBCFE8" stroke-width="1.5"/>
+    <line x1="-4" y1="4" x2="4" y2="4" stroke="#FBCFE8" stroke-width="1.5"/>
+    <line x1="-8" y1="12" x2="8" y2="12" stroke="#FBCFE8" stroke-width="1.5"/>
+  </g>
+
+  <!-- Center Hub: BRIN Core -->
+  <circle cx="100" cy="100" r="16" fill="#C53030" stroke="url(#goldGrad)" stroke-width="3"/>
+  <circle cx="100" cy="100" r="8" fill="#FFFFFF"/>
+  <circle cx="100" cy="100" r="4" fill="#1F4E78"/>
+</svg>
