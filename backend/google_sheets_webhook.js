@@ -30,7 +30,7 @@ var SHEET_NAME = "Hasil_Ujian";
 var SESSION_SHEET_NAME = "Sesi_Aktif";
 
 // ---- DURASI UJIAN (SATU-SATUNYA SUMBER KEBENARAN) -------------------------
-var EXAM_DURATION_SECONDS = 4 * 60; // 4 menit. Ubah di sini bila perlu.
+var EXAM_DURATION_SECONDS = 10 * 60; // 10 menit. Ubah di sini bila perlu.
 var SUBMIT_GRACE_SECONDS = 90;      // Toleransi keterlambatan jaringan saat submit.
 
 // ---- GERBANG JADWAL --------------------------------------------------------
