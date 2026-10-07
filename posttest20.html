@@ -2249,7 +2249,18 @@
             body: JSON.stringify(payload)
           });
           if (!response.ok) throw new Error(`Server HTTP ${response.status}`);
-          const data = await response.json();
+          const rawText = await response.text();
+          let data;
+          try {
+            data = JSON.parse(rawText);
+          } catch (parseErr) {
+            // Google Apps Script cold-start redirect kadang mengembalikan teks sambutan (bukan JSON)
+            if (coba < MAKS_COBA) {
+              await new Promise(r => setTimeout(r, 1500 * coba));
+              continue;
+            }
+            throw new Error(`Respon server tidak valid (${rawText.slice(0, 60)}...)`);
+          }
           if (data && typeof data === "object") {
             data._rttMs = Date.now() - t0;
           }
@@ -2271,7 +2282,7 @@
           // dari tahap redirect script.googleusercontent.com. Ini gangguan
           // SEMENTARA, bukan kode salah — WAJIB dicoba ulang, jangan langsung
           // dinyatakan gagal ke peserta.
-          if (coba < MAKS_COBA && /fetch|network|Failed|HTTP (404|408|429|5\d\d)/i.test(String(err && err.message || err))) {
+          if (coba < MAKS_COBA && /fetch|network|Failed|SyntaxError|JSON|Unexpected|HTTP (404|408|429|5\d\d)/i.test(String(err && err.message || err))) {
             await new Promise(r => setTimeout(r, 1500 * coba));
             continue;
           }
