@@ -508,18 +508,15 @@
         </div>
         <h3 id="violationTitle" class="text-xl font-black text-slate-900 uppercase">Peringatan Integritas!</h3>
         <p id="violationDesc" class="text-sm text-slate-600 my-2">
-          Anda terdeteksi meninggalkan halaman ujian (membuka tab / aplikasi lain).
+          Anda terdeteksi meninggalkan halaman ujian (membuka tab lain / aplikasi lain).
         </p>
-        <div class="bg-amber-50 text-amber-900 rounded-xl p-3 font-semibold text-xs mb-3 border border-amber-200">
+        <div class="bg-amber-50 text-amber-900 rounded-xl p-3 font-semibold text-xs mb-4 border border-amber-200">
           Peringatan: <span id="violationCountLabel" class="text-red-600 text-base font-bold">1</span> dari 3.<br>
           <span class="text-slate-600 font-normal">Jika mencapai 3 kali, ujian akan dihentikan dan didiskualifikasi secara otomatis!</span>
         </div>
-        <div class="text-xs font-medium text-slate-500 mb-4 bg-slate-50 py-2 rounded-lg border border-slate-200">
-          Otomatis kembali ke soal dalam <span id="violationCountdownSec" class="text-amber-600 font-bold text-sm">5</span> detik...
-        </div>
-        <button id="btnResumeViolation" onclick="resumeExamFromViolation()"
-          class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl shadow transition cursor-pointer text-sm">
-          Kembali ke Soal Sekarang (<span id="btnCountdownSec">5</span>s)
+        <button id="btnResumeViolation" onclick="resumeExamFromViolation()" disabled
+          class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl transition cursor-not-allowed text-sm">
+          Tunggu (<span id="violationCountdownSec">5</span>s) untuk Melanjutkan
         </button>
       </div>
     </div>
@@ -1413,28 +1410,36 @@
         // Tampilkan Modal Peringatan 1 atau 2
         document.getElementById("violationCountLabel").textContent = count;
         document.getElementById("modalViolation").classList.remove("hidden");
-        showViolationCountdown();
+        startViolationCooldown();
       }
     }
 
-    let violationCountdownInterval = null;
+    let violationCooldownInterval = null;
 
-    function showViolationCountdown() {
+    function startViolationCooldown() {
+      const btn = document.getElementById("btnResumeViolation");
+      if (!btn) return;
+
+      // Kunci tombol selama 5 detik pertama
+      btn.disabled = true;
+      btn.className = "w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl transition cursor-not-allowed text-sm";
+      btn.innerHTML = 'Tunggu (<span id="violationCountdownSec">5</span>s) untuk Melanjutkan';
+
       let secondsLeft = 5;
-      const labelSec = document.getElementById("violationCountdownSec");
-      const btnSec = document.getElementById("btnCountdownSec");
-      if (labelSec) labelSec.textContent = secondsLeft;
-      if (btnSec) btnSec.textContent = secondsLeft;
+      if (violationCooldownInterval) clearInterval(violationCooldownInterval);
 
-      if (violationCountdownInterval) clearInterval(violationCountdownInterval);
-      violationCountdownInterval = setInterval(() => {
+      violationCooldownInterval = setInterval(() => {
         secondsLeft--;
-        if (labelSec) labelSec.textContent = secondsLeft;
-        if (btnSec) btnSec.textContent = secondsLeft;
+        const span = document.getElementById("violationCountdownSec");
+        if (span) span.textContent = secondsLeft;
+
         if (secondsLeft <= 0) {
-          clearInterval(violationCountdownInterval);
-          violationCountdownInterval = null;
-          resumeExamFromViolation();
+          clearInterval(violationCooldownInterval);
+          violationCooldownInterval = null;
+          // Buka kunci tombol: tombol aktif dan bisa diklik peserta
+          btn.disabled = false;
+          btn.className = "w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-lg transition cursor-pointer text-sm";
+          btn.textContent = "Saya Mengerti & Lanjutkan Ujian";
         }
       }, 1000);
     }
@@ -1450,9 +1455,12 @@
     }
 
     function resumeExamFromViolation() {
-      if (violationCountdownInterval) {
-        clearInterval(violationCountdownInterval);
-        violationCountdownInterval = null;
+      const btn = document.getElementById("btnResumeViolation");
+      if (btn && btn.disabled) return; // Cegah klik jika cooldown masih berjalan
+
+      if (violationCooldownInterval) {
+        clearInterval(violationCooldownInterval);
+        violationCooldownInterval = null;
       }
       document.getElementById("modalViolation").classList.add("hidden");
       enterFullscreen();
