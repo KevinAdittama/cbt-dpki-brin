@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal CBT DATA NOVA 5.0 | DPKI BRIN</title>
+  <!-- Tailwind CSS (Lokal Standalone dengan CDN Fallback) -->
+  <script src="assets/js/tailwindcss.min.js"></script>
+  <script>window.tailwind || document.write('<script src="https://cdn.tailwindcss.com"><\/script>')</script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brinNavy: '#1F4E78',
+            brinGold: '#D4AF37',
+            brinRed: '#C53030',
+            brinDark: '#0F273E',
+            brinLight: '#F0F4F8'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Cegah seleksi teks dan drag gambar */
+    * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    input, select, textarea {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      user-select: text !important;
+    }
+    /* Efek Blur saat terdeteksi screenshot */
+    .screen-scramble {
+      filter: blur(28px) grayscale(100%);
+      pointer-events: none !important;
+      transition: filter 0.08s ease-in-out;
+    }
+    /* Pola Watermark Dinamis (GLOBAL — tampil di semua layar, termasuk hasil) */
+    .watermark-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 40;
+      opacity: 0.13;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: space-around;
+      justify-content: space-around;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1F4E78;
+      transform: rotate(-22deg) scale(1.15);
+      user-select: none;
+    }
+    .watermark-item {
+      padding: 30px 45px;
+      white-space: nowrap;
+    }
+
+    /* Print Optimization untuk Tanda Terima Verifikasi Resmi */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      header, footer, #screenRegister, #screenExam, #modalViolation, #modalFullscreenLost, .watermark-overlay, button, #resultIconBox, #resultTitle, #resultSubtitle {
+        display: none !important;
+      }
+      #screenResult {
+        display: block !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      #verificationReceiptCard {
+        border: 2px solid #1F4E78 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans antialiased" oncontextmenu="return false;">
+
+  <!-- APP CONTAINER -->
+  <div id="appContainer" class="flex-1 flex flex-col relative min-h-screen">
+
+    <!-- WATERMARK GLOBAL (permanen: tampil di SEMUA layar termasuk hasil) -->
+    <div id="watermarkLayer" class="watermark-overlay"></div>
+
+    <!-- TOP HEADER -->
+    <header class="bg-brinDark text-white shadow-lg border-b-4 border-brinGold sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <!-- Institutional Official Logos (Downloaded Ultra-Crisp Official Assets) -->
+          <div class="flex items-center gap-2 sm:gap-3 bg-white px-3.5 py-1.5 rounded-xl shadow-md border border-slate-200 shrink-0">
+            <img src="assets/img/logo_brin_landscape.png" alt="Logo Resmi BRIN" class="h-9 sm:h-10 w-auto object-contain" />
+            <div class="h-6 w-px bg-slate-300"></div>
+            <img src="assets/img/logo_koleksi_official.svg" alt="Logo Koleksi Ilmiah DPKI" class="h-8 sm:h-9 w-auto object-contain" />
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
+                DATA NOVA 5.0 • <span class="text-amber-400">SERI #2</span>
+              </h1>
+              <span class="hidden md:inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-900/80 border border-blue-700 text-blue-200">
+                Visualisasi Data
+              </span>
+            </div>
+            <p class="text-xs text-slate-300">
+              Direktorat Pengelolaan Koleksi Ilmiah (DPKI) - KST Soekarno Cibinong
+            </p>
+            <div class="text-[11px] sm:text-xs text-slate-300 flex items-center gap-1.5 flex-wrap font-medium mt-0.5">
+              <span class="text-amber-300 font-semibold tracking-wide">Data Berkualitas</span>
+              <span class="text-amber-400/80">•</span>
+              <span class="text-amber-300 font-semibold tracking-wide">Koleksi Bermanfaat</span>
+              <span class="text-amber-400/80">•</span>
+              <span class="text-amber-300 font-semibold tracking-wide">Inovasi Berdampak</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sesi & Timer (Hanya Tampil Saat Ujian) -->
+        <div id="headerExamInfo" class="hidden flex items-center gap-4">
+          <div class="text-right hidden sm:block">
+            <div id="hdrUserNama" class="text-xs font-semibold text-slate-200">Nama Peserta</div>
+            <div id="hdrUserSesi" class="text-[10px] text-amber-300 font-mono uppercase bg-blue-950/70 px-2 py-0.5 rounded border border-blue-800">PRE-TEST</div>
+          </div>
+          <!-- Timer Display -->
+          <div class="flex items-center gap-2 bg-slate-900/90 px-3.5 py-1.5 rounded-lg border border-slate-700 shadow-inner">
+            <svg class="w-5 h-5 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="timerDisplay" class="font-mono text-lg sm:text-xl font-bold text-amber-400">00:45</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col justify-center items-center p-3 sm:p-6 relative">
+
+      <!-- ======================================================== -->
+      <!-- 1. SCREEN: REGISTRASI & PAKTA INTEGRITAS (SPLIT-SCREEN)   -->
+      <!-- ======================================================== -->
+      <section id="screenRegister" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8 my-auto transition-all">
+        
+        <!-- BANNER JADWAL RESMI MULTI-TIMEZONE -->
+        <div id="scheduleBanner" class="mb-6 p-4 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 bg-blue-50 border-blue-200 text-blue-900">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-blue-800">Jadwal Akses CBT Terjadwal (3 Zona Waktu)</div>
+              <div class="text-xs sm:text-sm font-semibold tracking-tight text-slate-800">
+                09.00 - 09.30 WIB | 10.00 - 10.30 WITA | 11.00 - 11.30 WIT
+              </div>
+            </div>
+          </div>
+          <div class="text-right sm:border-l sm:border-blue-200 sm:pl-4">
+            <div id="userTimezoneLabel" class="text-[11px] text-slate-500 font-medium">Jam Server (WIB):</div>
+            <div id="liveClockWib" class="font-mono font-bold text-base text-brinNavy">00:00:00 WIB</div>
+            <span id="gateStatusBadge" class="inline-block mt-0.5 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              GERBANG BUKA (UJI COBA BEBAS)
+            </span>
+          </div>
+        </div>
+
+        <div class="text-center mb-6">
+          <span class="inline-block px-3 py-1 bg-blue-100 text-brinNavy text-xs font-bold rounded-full mb-2 uppercase tracking-wider">
+            Evaluasi Pelatihan Visualisasi Data
+          </span>
+          <h2 class="text-2xl font-bold text-slate-900">Login Peserta Ujian CBT</h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            Silakan lengkapi identitas Anda dengan benar untuk keperluan evaluasi dan rekapitulasi nilai DPKI BRIN.
+          </p>
+        </div>
+
+        <form id="formRegister" class="space-y-4" onsubmit="event.preventDefault(); handleStartExam();">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Nama Lengkap & Gelar <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="regNama" required placeholder="Contoh: Dr. Budi Santoso, M.Si."
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brinNavy focus:border-brinNavy text-sm transition outline-none">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                NIP / NIK <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="regNip" required inputmode="numeric" pattern="[0-9]*" maxlength="20"
+                autocomplete="off" placeholder="16–20 digit NIP/NIK — angka saja"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brinNavy focus:border-brinNavy text-sm transition outline-none font-mono tracking-wide">
+              <p id="nipHint" class="text-[11px] text-slate-400 mt-1">Hanya angka. Panjang yang diterima: 16–20 digit.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Sesi Ujian <span class="text-red-500">*</span>
+              </label>
+              <input type="hidden" id="regSesi" value="Pre-Test">
+              <div class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-sm font-bold text-brinNavy">PRE-TEST</div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Asal Satuan Kerja / Unit / Instansi <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="regSatker" required placeholder="Contoh: DPKI - Herbarium Bogoriense / Layanan ELSA"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brinNavy focus:border-brinNavy text-sm transition outline-none">
+          </div>
+
+          <!-- KOTAK ATURAN & PAKTA INTEGRITAS -->
+          <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl space-y-2 text-xs text-amber-900 mt-4">
+            <div class="font-bold flex items-center gap-1.5 text-amber-800">
+              <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              SISTEM PENGAWASAN & INTEGRITAS UJIAN (10 MENIT):
+            </div>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li>1 NIP hanya berhak mengikuti <strong>1 kali ujian</strong> per sesi.</li>
+              <li>Wajib dalam <strong>Mode Layar Penuh (Fullscreen)</strong> selama pengerjaan.</li>
+              <li>Dilarang membuka tab baru / berpindah aplikasi / <code>Alt+Tab</code> (Maksimal 3 kali sebelum didiskualifikasi otomatis).</li>
+              <li>Fitur tangkapan layar (Screenshot/PrintScreen), copy-paste teks, dan klik kanan dinonaktifkan.</li>
+              <li>Layar memuat <strong>Watermark Transparan Dinamis</strong> identitas Anda demi menjaga kerahasiaan soal.</li>
+            </ul>
+          </div>
+
+          <!-- TELEMETRI PERANGKAT (DEVICE DETECTOR BADGE) -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span id="telemetryIpText">Mendeteksi IP Publik...</span>
+            </div>
+            <div id="telemetryDeviceText" class="font-mono text-slate-600">
+              Mendeteksi Perangkat...
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" id="btnSubmitLogin"
+              class="w-full bg-brinNavy hover:bg-blue-900 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm sm:text-base">
+              <span id="btnSubmitLoginText">Mulai Ujian & Masuk Layar Penuh</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- 2. SCREEN: RUANG UJIAN (AKTIF)                            -->
+      <!-- ======================================================== -->
+      <section id="screenExam" class="hidden w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden relative transition-all">
+        
+
+        <!-- PROGRESS BAR SECTION (0% - 100%) -->
+        <div class="px-6 pt-4 pb-3 bg-white border-b border-slate-100 relative z-20">
+          <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+            <span class="text-slate-600 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-brinNavy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Kemajuan Pengerjaan:
+            </span>
+            <span id="examProgressText" class="text-brinNavy font-bold">0 dari 20 Soal Terjawab (0%)</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200 shadow-inner">
+            <div id="examProgressBar" class="h-2.5 rounded-full bg-gradient-to-r from-brinNavy via-blue-600 to-emerald-500 transition-all duration-500 ease-out shadow-sm" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- TOP BAR RUANG UJIAN -->
+        <div class="bg-slate-50 border-b border-slate-200 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 relative z-20">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold uppercase tracking-wider bg-blue-100 text-brinNavy px-3 py-1 rounded-full border border-blue-200">
+              Soal No. <span id="currentQuestionNumDisplay" class="text-sm font-black">1</span> dari 20
+            </span>
+            <span id="strikeBadge" class="hidden text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-300 animate-pulse">
+              Pelanggaran Tab: <span id="strikeBadgeCount">0</span>/3
+            </span>
+          </div>
+          <div class="text-xs text-slate-500 font-medium">
+            Status: <span id="ansStatusLabel" class="text-amber-600 font-semibold">Belum Dijawab</span>
+          </div>
+        </div>
+
+        <!-- BADAN SOAL -->
+        <div class="p-6 sm:p-8 relative z-20">
+          <div class="mb-4">
+            <span id="questionTopicBadge" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+              TOPIK SOAL
+            </span>
+            <h3 id="questionText" class="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed">
+              Teks pertanyaan akan muncul di sini...
+            </h3>
+          </div>
+
+          <!-- OPSI JAWABAN (A, B, C, D) DENGAN KARTU INTERAKTIF -->
+          <div id="optionsContainer" class="space-y-3 mt-6">
+            <!-- Pilihan jawaban di-inject secara dinamis via JS -->
+          </div>
+        </div>
+
+        <!-- FOOTER RUANG UJIAN & NAVIGASI -->
+        <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between relative z-20">
+          <button id="btnPrev" class="hidden" disabled
+            class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold text-sm transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span>Sebelumnya</span>
+          </button>
+
+          <!-- GRID BULLET NAVIGATOR CEPAT -->
+          <div id="quickNavContainer" class="hidden md:flex items-center gap-1.5">
+            <!-- 10 tombol angka mini -->
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnNext" onclick="navigateQuestion(1)"
+              class="px-5 py-2 rounded-xl bg-brinNavy hover:bg-blue-900 text-white font-semibold text-sm transition flex items-center gap-1.5 shadow cursor-pointer">
+              <span>Selanjutnya</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <button id="btnSubmitExam" onclick="confirmSubmitExam()"
+              class="hidden px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition flex items-center gap-1.5 shadow-lg cursor-pointer">
+              <span>Kirim Jawaban</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- 3. SCREEN: HASIL & TANDA TERIMA RESMI (VERIFIED RECEIPT)   -->
+      <!-- ======================================================== -->
+      <section id="screenResult" class="hidden w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 text-center my-6 transition-all">
+        
+        <div id="resultIconBox" class="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 shadow">
+          <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <h2 id="resultTitle" class="text-2xl sm:text-3xl font-extrabold text-slate-900">Ujian Telah Selesai</h2>
+        <p id="resultSubtitle" class="text-xs sm:text-sm text-slate-600 mt-1">
+          Terima kasih telah berpartisipasi dalam evaluasi kompetensi DATA NOVA 5.0.
+        </p>
+
+        <!-- KOTAK SKOR ANIMASI & PREDIKAT BADGE -->
+        <div class="my-5 bg-gradient-to-b from-slate-50 to-blue-50/40 rounded-2xl border border-slate-200 p-5 max-w-md mx-auto shadow-sm">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Skor Akhir Anda</div>
+          
+          <!-- ANIMATED SCORE COUNTER DISPLAY -->
+          <div id="finalScoreDisplay" class="text-5xl sm:text-6xl font-black text-brinNavy my-1 font-mono tracking-tight">0</div>
+          
+          <!-- ACHIEVEMENT BADGE (>=80 SANGAT BAIK, 60-79 BAIK, 40-59 CUKUP, <40 KURANG) -->
+          <div class="my-2.5">
+            <span id="achievementBadge" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300">
+              PREDIKAT: SANGAT BAIK
+            </span>
+          </div>
+
+          <div id="scoreSummaryDetail" class="text-xs font-medium text-slate-600">
+            Benar: <span id="resBenar" class="text-emerald-600 font-bold">0</span> | 
+            Salah: <span id="resSalah" class="text-red-500 font-bold">0</span> | 
+            Total: 20 Soal
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- KARTU TANDA TERIMA VERIFIKASI RESMI                        -->
+        <!-- ======================================================== -->
+        <div id="verificationReceiptCard" class="text-left bg-white rounded-2xl border-2 border-slate-300 p-5 sm:p-6 shadow-sm mb-6 relative overflow-hidden">
+          <!-- Subtle Decorative Watermark Pattern -->
+          <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-blue-50 rounded-full pointer-events-none opacity-60"></div>
+          
+          <!-- Receipt Header -->
+          <div class="border-b-2 border-slate-200 pb-3 mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow border border-slate-200 shrink-0 p-1">
+                <img src="assets/img/logo_brin_landscape.png" alt="Logo BRIN" class="w-full h-full object-contain" />
+              </div>
+              <div>
+                <div class="text-xs font-extrabold text-slate-900 tracking-tight">BADAN RISET DAN INOVASI NASIONAL</div>
+                <div class="text-[11px] text-slate-600">Direktorat Pengelolaan Koleksi Ilmiah (DPKI) - KST Soekarno Cibinong</div>
+                <div class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mt-0.5">Tanda Terima Verifikasi Resmi CBT V4</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] text-slate-400 font-medium uppercase">No. Verifikasi Digital</div>
+              <div id="resVerificationCode" class="font-mono text-xs font-bold text-brinNavy tracking-wider">BRIN-DPKI-CBT-2026-XXXX</div>
+            </div>
+          </div>
+
+          <!-- Receipt Details List -->
+          <div class="space-y-2.5 text-xs sm:text-sm">
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Nama Peserta:</span>
+              <span id="resNama" class="font-bold text-slate-900">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">NIP / NIK:</span>
+              <span id="resNip" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Unit / Satuan Kerja:</span>
+              <span id="resSatkerReceipt" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Sesi Evaluasi:</span>
+              <span id="resSesi" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Waktu Penyelesaian:</span>
+              <span id="resTimestampReceipt" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Durasi Pengerjaan:</span>
+              <span id="resDurasiReceipt" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Skor & Predikat:</span>
+              <span id="resScoreReceiptText" class="font-bold text-brinNavy">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">Status Integritas:</span>
+              <span id="resIntegritas" class="font-bold text-emerald-600">LULUS BERSIH (0 Pelanggaran)</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5">
+              <span class="text-slate-500 font-medium">IP & Perangkat:</span>
+              <span id="resDeviceDetail" class="font-mono text-slate-700">-</span>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-slate-500 font-medium">Status Sinkronisasi:</span>
+              <span id="resWebhookStatus" class="font-semibold text-blue-600">Menyimpan ke Spreadsheet...</span>
+            </div>
+          </div>
+
+          <!-- Receipt Disclaimer Note -->
+          <div class="border-t border-slate-200 mt-3 pt-2 text-[10px] text-slate-500 italic">
+            * Tanda terima ini sah diterbitkan secara elektronik oleh Sistem CBT Portal DATA NOVA 5.0 DPKI BRIN dan dapat digunakan sebagai bukti keikutsertaan evaluasi pelatihan resmi.
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <button onclick="downloadResultJson()"
+            class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Unduh Bukti Ujian (JSON)</span>
+          </button>
+          <button onclick="window.print()"
+            class="px-5 py-2.5 rounded-xl bg-brinNavy hover:bg-blue-900 text-white font-semibold text-xs transition flex items-center justify-center gap-2 shadow cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            <span>Cetak Tanda Terima</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER RESMI -->
+    <footer class="bg-slate-900 text-slate-400 text-center py-3 text-xs border-t border-slate-800">
+      Direktorat Pengelolaan Koleksi Ilmiah (DPKI) &copy; 2026 Badan Riset dan Inovasi Nasional (BRIN)
+    </footer>
+
+    <!-- ======================================================== -->
+    <!-- MODAL OVERLAY: PERINGATAN PELANGGARAN TAB (STRIKE 1 & 2)  -->
+    <!-- ======================================================== -->
+    <div id="modalViolation" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-amber-500 animate-bounce">
+        <div class="w-16 h-16 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h3 id="violationTitle" class="text-xl font-black text-slate-900 uppercase">Peringatan Integritas!</h3>
+        <p id="violationDesc" class="text-sm text-slate-600 my-3">
+          Anda terdeteksi meninggalkan halaman ujian (membuka tab lain / aplikasi lain).
+        </p>
+        <div class="bg-amber-50 text-amber-900 rounded-xl p-3 font-semibold text-xs mb-4 border border-amber-200">
+          Peringatan: <span id="violationCountLabel" class="text-red-600 text-base font-bold">1</span> dari 3.<br>
+          <span class="text-slate-600 font-normal">Jika mencapai 3 kali, ujian akan dihentikan dan didiskualifikasi secara otomatis!</span>
+        </div>
+        <button onclick="resumeExamFromViolation()"
+          class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-lg transition cursor-pointer">
+          Saya Mengerti & Lanjutkan Ujian
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL OVERLAY: FULLSCREEN TERPUTUS                        -->
+    <!-- ======================================================== -->
+    <div id="modalFullscreenLost" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-red-500">
+        <div class="w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 uppercase">Layar Penuh Terputus</h3>
+        <p class="text-sm text-slate-600 my-3">
+          Sesuai aturan ujian, Anda wajib mengerjakan dalam mode layar penuh (fullscreen).
+        </p>
+        <button onclick="reEnterFullscreen()"
+          class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg transition cursor-pointer">
+          Kembali ke Layar Penuh
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TOAST NOTIFIKASI NON-BLOCKING (pengganti alert)           -->
+    <!-- ======================================================== -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-96 pointer-events-none"></div>
+
+    <!-- MODAL INFO NON-BLOCKING (untuk pesan penting seperti waktu habis) -->
+    <div id="modalInfo" class="hidden fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-blue-500">
+        <div id="modalInfoIcon" class="w-16 h-16 mx-auto rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 id="modalInfoTitle" class="text-xl font-black text-slate-900 uppercase mb-2">Informasi</h3>
+        <p id="modalInfoDesc" class="text-sm text-slate-600 mb-4">-</p>
+        <div id="modalInfoSpinner" class="flex items-center justify-center gap-2 text-slate-500 text-xs">
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span id="modalInfoSpinnerText">Mengirim jawaban Anda ke server...</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT ENGINE LENGKAP                                -->
+  <!-- ======================================================== -->
+  <script>
+    /**
+     * KONFIGURASI WEBHOOK DATABASE GOOGLE SHEETS
+     */
+    const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwxz8zygdZ4_BNKuDU80YY0XNqepSQjCO-QnUVs6rNCA7Hzrjy1hXIrlOcNlr7aCUK17A/exec"; 
+
+    /**
+     * BANK 10 SOAL RESMI DATA NOVA 5.0 (DPKI BRIN)
+     */
+    const MASTER_QUESTIONS = [
+  {
+    "id": 201,
+    "topic": "Struktur Data Grafik",
+    "question": "Sebelum membuat grafik dari data pengamatan, langkah paling tepat adalah...",
+    "options": [
+      "Memastikan data memiliki judul kolom dan setiap baris mewakili catatan yang jelas",
+      "Menghapus semua nama kolom",
+      "Mengubah semua angka menjadi gambar",
+      "Memberi warna berbeda pada setiap sel secara acak"
+    ]
+  },
+  {
+    "id": 202,
+    "topic": "Pemilihan Grafik",
+    "question": "Jenis grafik yang paling sesuai untuk menunjukkan hubungan antara tinggi tanaman dan jumlah daun adalah...",
+    "options": [
+      "Scatter plot",
+      "Pie chart",
+      "Doughnut chart",
+      "Area chart tanpa sumbu"
+    ]
+  },
+  {
+    "id": 203,
+    "topic": "Pemilihan Grafik",
+    "question": "Data jumlah sampel yang diterima setiap bulan selama satu tahun paling tepat ditampilkan dengan...",
+    "options": [
+      "Line chart",
+      "Pie chart dengan 12 irisan",
+      "Radar chart",
+      "Text box"
+    ]
+  },
+  {
+    "id": 204,
+    "topic": "Sumbu Grafik",
+    "question": "Pada grafik jumlah spesimen, sumbu vertikal biasanya digunakan untuk menunjukkan...",
+    "options": [
+      "Nilai atau jumlah yang diukur",
+      "Nama pembuat laporan saja",
+      "Alamat file Excel",
+      "Warna logo instansi"
+    ]
+  },
+  {
+    "id": 205,
+    "topic": "Sumbu Grafik",
+    "question": "Label sumbu pada grafik diperlukan terutama agar pembaca mengetahui...",
+    "options": [
+      "Apa arti kategori dan satuan nilai yang ditampilkan",
+      "Siapa yang terakhir membuka file",
+      "Berapa ukuran layar komputer",
+      "Jenis printer yang digunakan"
+    ]
+  },
+  {
+    "id": 206,
+    "topic": "Legenda Grafik",
+    "question": "Sebuah grafik memiliki dua garis untuk lokasi pengamatan A dan B. Elemen yang menjelaskan arti kedua garis tersebut adalah...",
+    "options": [
+      "Legend atau legenda",
+      "Page margin",
+      "Footer dokumen",
+      "Spell check"
+    ]
+  },
+  {
+    "id": 207,
+    "topic": "Konsistensi Satuan",
+    "question": "Data berat sampel tercatat sebagian dalam gram dan sebagian dalam kilogram. Sebelum membuat grafik, sebaiknya...",
+    "options": [
+      "Menyamakan satuan terlebih dahulu",
+      "Mencampur satuan tanpa keterangan",
+      "Menghapus semua nilai kilogram",
+      "Mengubah angka menjadi nama bulan"
+    ]
+  },
+  {
+    "id": 208,
+    "topic": "Kualitas Data",
+    "question": "Jika satu nilai pengamatan jauh lebih besar daripada nilai lain, tindakan pertama yang tepat adalah...",
+    "options": [
+      "Memeriksa sumber dan satuan nilai tersebut",
+      "Langsung menghapus nilai itu",
+      "Mengganti nilai dengan rata-rata tanpa catatan",
+      "Menyembunyikan titik data dari grafik"
+    ]
+  },
+  {
+    "id": 209,
+    "topic": "Filter Data",
+    "question": "Peneliti ingin membuat grafik hanya untuk sampel dari lokasi C tanpa menghapus data lokasi lain. Fitur yang tepat adalah...",
+    "options": [
+      "Filter",
+      "Merge Cells",
+      "Wrap Text",
+      "Format Painter"
+    ]
+  },
+  {
+    "id": 210,
+    "topic": "Tabel dan Grafik",
+    "question": "Keuntungan mengubah rentang data menjadi Excel Table sebelum membuat grafik adalah...",
+    "options": [
+      "Data dan grafik lebih mudah diperluas saat baris baru ditambahkan",
+      "Semua data otomatis menjadi benar",
+      "Kunci jawaban otomatis tersembunyi",
+      "File tidak lagi bisa diedit"
+    ]
+  },
+  {
+    "id": 211,
+    "topic": "Judul Grafik",
+    "question": "Judul grafik yang paling informatif untuk data jumlah koleksi per jenis adalah...",
+    "options": [
+      "Jumlah Koleksi per Jenis, 2026",
+      "Grafik Saya",
+      "Data",
+      "Hasil"
+    ]
+  },
+  {
+    "id": 212,
+    "topic": "Warna Grafik",
+    "question": "Prinsip penggunaan warna yang baik pada grafik adalah...",
+    "options": [
+      "Menggunakan warna secukupnya dan konsisten dengan makna data",
+      "Memberi warna berbeda pada setiap angka",
+      "Menggunakan warna neon sebanyak mungkin",
+      "Menggunakan warna tanpa legenda"
+    ]
+  },
+  {
+    "id": 213,
+    "topic": "Aksesibilitas Visual",
+    "question": "Agar grafik lebih mudah dibaca oleh peserta dengan buta warna, sebaiknya...",
+    "options": [
+      "Tidak hanya mengandalkan warna; gunakan label, pola, atau simbol",
+      "Menghapus semua label",
+      "Memakai warna merah dan hijau saja",
+      "Membuat semua seri berwarna sama tanpa keterangan"
+    ]
+  },
+  {
+    "id": 214,
+    "topic": "Perbandingan Nilai",
+    "question": "Untuk membandingkan jumlah koleksi dari beberapa kategori yang namanya panjang, pilihan yang lebih mudah dibaca adalah...",
+    "options": [
+      "Bar chart horizontal",
+      "Pie chart 3D",
+      "Line chart tanpa label",
+      "Gauge chart untuk setiap kata"
+    ]
+  },
+  {
+    "id": 215,
+    "topic": "Rata-rata dan Data Mentah",
+    "question": "Jika laporan hanya menampilkan rata-rata waktu layanan, risiko utama yang perlu diperhatikan adalah...",
+    "options": [
+      "Variasi atau nilai ekstrem dapat tersembunyi",
+      "Grafik pasti tidak bisa dibuat",
+      "Semua data otomatis menjadi duplikat",
+      "Rata-rata selalu sama dengan nilai maksimum"
+    ]
+  },
+  {
+    "id": 216,
+    "topic": "Sumber Data",
+    "question": "Informasi sumber data pada laporan visualisasi berguna untuk...",
+    "options": [
+      "Menunjukkan asal data dan membantu proses verifikasi",
+      "Menggantikan seluruh tabel data",
+      "Membuat grafik bergerak otomatis",
+      "Menghapus kebutuhan pemeriksaan data"
+    ]
+  },
+  {
+    "id": 217,
+    "topic": "Tanggal dan Urutan Waktu",
+    "question": "Jika bulan pada grafik tersusun April, Januari, Februari, penyebab yang perlu diperiksa adalah...",
+    "options": [
+      "Kolom bulan mungkin dibaca sebagai teks dan belum diurutkan kronologis",
+      "Warna grafik terlalu gelap",
+      "Legenda terlalu panjang",
+      "Ukuran font judul terlalu besar"
+    ]
+  },
+  {
+    "id": 218,
+    "topic": "Interpretasi Grafik",
+    "question": "Kesimpulan yang baik dari grafik harus...",
+    "options": [
+      "Berdasarkan pola data dan menyebutkan konteks atau periode yang diamati",
+      "Menyatakan sebab pasti tanpa bukti",
+      "Mengabaikan skala sumbu",
+      "Hanya menyebut warna yang paling menonjol"
+    ]
+  },
+  {
+    "id": 219,
+    "topic": "Korelasi dan Sebab Akibat",
+    "question": "Dua variabel terlihat meningkat bersama dalam scatter plot. Kesimpulan yang paling hati-hati adalah...",
+    "options": [
+      "Ada hubungan yang terlihat, tetapi belum membuktikan sebab-akibat",
+      "Variabel pertama pasti menyebabkan variabel kedua",
+      "Tidak ada hubungan sama sekali",
+      "Data harus langsung dihapus"
+    ]
+  },
+  {
+    "id": 220,
+    "topic": "Ekspor dan Pelaporan",
+    "question": "Sebelum grafik dimasukkan ke laporan resmi, pemeriksaan terakhir yang paling penting adalah...",
+    "options": [
+      "Memeriksa judul, label, satuan, periode, sumber, dan kesesuaian grafik dengan data",
+      "Menghapus semua angka dari tabel sumber",
+      "Memastikan semua warna berbeda",
+      "Mengubah grafik menjadi dekorasi tanpa keterangan"
+    ]
+  }
+];
+
+    /**
+     * STATE MANAGEMENT GLOBAL
+     */
+    let currentUser = {
+      nama: "",
+      nip: "",
+      satker: "",
+      sesi: "Pre-Test"
+    };
+
+    let deviceTelemetry = {
+      ip: "103.178.xxx (Mendeteksi)",
+      os: "Windows",
+      browser: "Chrome",
+      resolusi: "1920x1080"
+    };
+
+    let examState = {
+      isActive: false,
+      isFinished: false,
+      startTime: null,
+      endTime: null,
+      timeLeft: 45, // fallback only; versi 20 memakai timer per soal
+      timerInterval: null,
+      heartbeatInterval: null,
+      currentIndex: 0,
+      shuffledQuestions: [],
+      userAnswers: {}, // key: qIndex, value: selectedOptionOriginalText
+      strikeCount: 0,
+      violationLogs: [],
+      sessionToken: null,
+      serverDeadlineMs: null,  // waktu berakhir ABSOLUT menurut server
+      serverClockOffsetMs: 0,  // selisih jam server vs jam perangkat
+      lastViolationAt: 0       // untuk debounce event ganda
+    };
+
+    /**
+     * INISIALISASI TELEMETRI PERANGKAT & JAM SERVER
+     */
+    window.addEventListener("DOMContentLoaded", () => {
+      initTelemetry();
+      initLiveClock();
+    });
+
+    // #11: peringatan bila menutup / refresh saat ujian masih berjalan.
+    window.addEventListener("beforeunload", (e) => {
+      if (examState.isActive && !examState.isFinished) {
+        e.preventDefault();
+        e.returnValue = "Ujian masih berlangsung. Yakin ingin keluar? Jawaban Anda bisa hilang.";
+        return e.returnValue;
+      }
+    });
+
+    // Simpan progres terakhir saat peserta menutup / menyembunyikan halaman.
+    window.addEventListener("pagehide", () => {
+      if (examState.isActive && !examState.isFinished && examState.sessionToken) {
+        try {
+          const order = examState.shuffledQuestions.map(q => ({ id: q.id, options: q.options }));
+          const blob = JSON.stringify({
+            action: "SAVE_PROGRESS",
+            session_token: examState.sessionToken,
+            answers: examState.userAnswers,
+            question_order: order,
+            violations: examState.violationLogs
+          });
+          navigator.sendBeacon && navigator.sendBeacon(GOOGLE_SHEETS_WEBHOOK_URL, blob);
+        } catch (e) { /* abaikan */ }
+      }
+    });
+
+    function initTelemetry() {
+      // 1. Deteksi Resolusi Layar
+      deviceTelemetry.resolusi = `${window.screen.width} x ${window.screen.height}`;
+
+      // 2. Deteksi OS
+      const ua = navigator.userAgent;
+      if (ua.indexOf("Win") !== -1) deviceTelemetry.os = "Windows";
+      else if (ua.indexOf("Mac") !== -1) deviceTelemetry.os = "macOS";
+      else if (ua.indexOf("Linux") !== -1) deviceTelemetry.os = "Linux";
+      else if (ua.indexOf("Android") !== -1) deviceTelemetry.os = "Android";
+      else if (ua.indexOf("like Mac") !== -1) deviceTelemetry.os = "iOS";
+
+      // 3. Deteksi Browser
+      if (ua.indexOf("Edg") !== -1) deviceTelemetry.browser = "Microsoft Edge";
+      else if (ua.indexOf("Chrome") !== -1) deviceTelemetry.browser = "Google Chrome";
+      else if (ua.indexOf("Firefox") !== -1) deviceTelemetry.browser = "Mozilla Firefox";
+      else if (ua.indexOf("Safari") !== -1) deviceTelemetry.browser = "Apple Safari";
+
+      document.getElementById("telemetryDeviceText").textContent = `${deviceTelemetry.os} • ${deviceTelemetry.browser} • ${deviceTelemetry.resolusi}`;
+
+      // 4. Deteksi IP Publik (via API publik ipify)
+      //    #15: tunggu maksimal 3,5 detik; kalau gagal tandai "Tidak Terdeteksi" (jujur,
+      //    jangan simpan placeholder menyesatkan seperti "xxx (Mendeteksi)").
+      let ipResolved = false;
+      const ipTimeout = setTimeout(() => {
+        if (!ipResolved) {
+          deviceTelemetry.ip = "Tidak Terdeteksi";
+          const el = document.getElementById("telemetryIpText");
+          if (el) el.textContent = "IP Anda: Tidak Terdeteksi (jaringan lambat/diblokir)";
+        }
+      }, 3500);
+      fetch("https://api.ipify.org?format=json")
+        .then(r => r.json())
+        .then(d => {
+          ipResolved = true;
+          clearTimeout(ipTimeout);
+          deviceTelemetry.ip = d.ip;
+          const el = document.getElementById("telemetryIpText");
+          if (el) el.textContent = `IP Anda: ${d.ip}`;
+        })
+        .catch(() => {
+          ipResolved = true;
+          clearTimeout(ipTimeout);
+          deviceTelemetry.ip = "Tidak Terdeteksi";
+          const el = document.getElementById("telemetryIpText");
+          if (el) el.textContent = "IP Anda: Tidak Terdeteksi (jaringan lokal/intranet)";
+        });
+    }
+
+    /**
+     * DETEKSI OTOMATIS 3 ZONA WAKTU INDONESIA (WIB UTC+7, WITA UTC+8, WIT UTC+9)
+     * INVARIANT: Fungsi ini dipertahankan utuh untuk kepatuhan testing otomatis.
+     */
+    function detectIndonesianTimezone(customTz, customOffsetMinutes) {
+      let tzZone = "WIB";
+      let offsetHours = 7;
+      let ianaTz = customTz;
+
+      if (ianaTz === undefined) {
+        try {
+          ianaTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        } catch (e) {
+          ianaTz = "";
+        }
+      }
+
+      const offsetMinutes = (customOffsetMinutes !== undefined)
+        ? customOffsetMinutes
+        : new Date().getTimezoneOffset();
+      const localOffsetHours = -offsetMinutes / 60;
+
+      // 1. Deteksi spesifik berdasarkan nama IANA Timezone
+      const lowerIana = (ianaTz || "").toLowerCase();
+      if (lowerIana.includes("jayapura") || (lowerIana.includes("wit") && !lowerIana.includes("wita"))) {
+        tzZone = "WIT";
+        offsetHours = 9;
+      } else if (lowerIana.includes("makassar") || lowerIana.includes("ujung_pandang") || lowerIana.includes("wita") || lowerIana.includes("bali")) {
+        tzZone = "WITA";
+        offsetHours = 8;
+      } else if (lowerIana.includes("jakarta") || lowerIana.includes("pontianak") || lowerIana.includes("wib")) {
+        tzZone = "WIB";
+        offsetHours = 7;
+      } else {
+        // 2. Deteksi berdasarkan selisih offset jam relatif UTC
+        if (Math.round(localOffsetHours) === 9) {
+          tzZone = "WIT";
+          offsetHours = 9;
+        } else if (Math.round(localOffsetHours) === 8) {
+          tzZone = "WITA";
+          offsetHours = 8;
+        } else if (Math.round(localOffsetHours) === 7) {
+          tzZone = "WIB";
+          offsetHours = 7;
+        } else {
+          // Default ke WIB (Standar Nasional DPKI Cibinong UTC+7)
+          tzZone = "WIB";
+          offsetHours = 7;
+        }
+      }
+
+      return {
+        code: tzZone,             // "WIB" | "WITA" | "WIT"
+        offsetHours: offsetHours, // 7 | 8 | 9
+        iana: ianaTz
+      };
+    }
+    window.detectIndonesianTimezone = detectIndonesianTimezone;
+
+    /**
+     * JAM REAL-TIME SINKRONISASI ABSOLUT DENGAN LABEL ZONA WAKTU LOKAL
+     */
+    function initLiveClock() {
+      const clockEl = document.getElementById("liveClockWib");
+      const badgeEl = document.getElementById("gateStatusBadge");
+      const tzLabelEl = document.getElementById("userTimezoneLabel");
+
+      const detectedTz = detectIndonesianTimezone();
+      window.detectedUserTimezone = detectedTz;
+
+      if (tzLabelEl) {
+        tzLabelEl.textContent = detectedTz.code;
+      }
+
+      function updateClock() {
+        const now = new Date();
+        // Hitung waktu absolut sinkron: UTC base + offset jam zona terdeteksi
+        const targetUtcMs = now.getTime() + (detectedTz.offsetHours * 3600000);
+        const targetDate = new Date(targetUtcMs);
+
+        const hh = targetDate.getUTCHours().toString().padStart(2, '0');
+        const mm = targetDate.getUTCMinutes().toString().padStart(2, '0');
+        const ss = targetDate.getUTCSeconds().toString().padStart(2, '0');
+
+        if (clockEl) {
+          clockEl.textContent = `${hh}:${mm}:${ss} ${detectedTz.code}`;
+        }
+
+        if (badgeEl) {
+          badgeEl.className = "inline-block mt-0.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+          badgeEl.textContent = "GERBANG BUKA (UJI COBA BEBAS)";
+        }
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    /**
+     * ALGORITMA SHUFFLE (FISHER-YATES)
+     */
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /**
+     * PROGRESS BAR UPDATE ENGINE
+     */
+    function updateProgressBar() {
+      const answeredCount = Object.keys(examState.userAnswers).length;
+      const totalQuestions = (examState.shuffledQuestions && examState.shuffledQuestions.length > 0)
+        ? examState.shuffledQuestions.length
+        : MASTER_QUESTIONS.length;
+      const percent = Math.round((answeredCount / totalQuestions) * 100);
+
+      const barEl = document.getElementById("examProgressBar");
+      const textEl = document.getElementById("examProgressText");
+
+      if (barEl) {
+        barEl.style.width = `${percent}%`;
+      }
+      if (textEl) {
+        textEl.textContent = `${answeredCount} dari ${totalQuestions} Soal Terjawab (${percent}%)`;
+      }
+    }
+
+    /**
+     * NOTIFIKASI NON-BLOCKING (pengganti alert)
+     * alert() membekukan seluruh JavaScript -> submit tertunda / gagal.
+     */
+    function showToast(message, type) {
+      const colors = {
+        info:    "bg-blue-600 text-white border-blue-700",
+        success: "bg-emerald-600 text-white border-emerald-700",
+        warning: "bg-amber-500 text-white border-amber-600",
+        error:   "bg-red-600 text-white border-red-700"
+      };
+      const icons = { info: "i", success: "OK", warning: "!", error: "X" };
+      const el = document.createElement("div");
+      el.className = `pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl shadow-2xl border-2 ${colors[type] || colors.info} transition-all duration-300 opacity-0 translate-x-4`;
+      el.innerHTML = `<span class="font-black text-sm shrink-0">${icons[type] || "i"}</span>
+        <span class="text-sm font-medium leading-snug">${String(message).replace(/</g, "&lt;")}</span>`;
+      const container = document.getElementById("toastContainer");
+      if (!container) { return; }
+      container.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove("opacity-0", "translate-x-4"));
+      setTimeout(() => {
+        el.classList.add("opacity-0", "translate-x-4");
+        setTimeout(() => el.remove(), 350);
+      }, 6000);
+    }
+
+    /** Modal informasi non-blocking (tanpa tombol, tidak membekukan JS). */
+    function showInfoModal(title, desc, spinnerText) {
+      document.getElementById("modalInfoTitle").textContent = title || "Informasi";
+      document.getElementById("modalInfoDesc").textContent = desc || "";
+      const sp = document.getElementById("modalInfoSpinner");
+      if (spinnerText) {
+        sp.classList.remove("hidden");
+        document.getElementById("modalInfoSpinnerText").textContent = spinnerText;
+      } else {
+        sp.classList.add("hidden");
+      }
+      document.getElementById("modalInfo").classList.remove("hidden");
+    }
+
+    function hideInfoModal() {
+      document.getElementById("modalInfo").classList.add("hidden");
+    }
+
+    /** Validasi NIP/NIK: hanya angka, 16–20 digit. */
+    function validateNipNik(raw) {
+          const digits = String(raw || "").replace(/\D/g, "");
+          if (digits.length >= 16 && digits.length <= 20) return { ok: true, value: digits, jenis: "NIP/NIK" };
+          return {
+            ok: false,
+            value: digits,
+            message: `NIP/NIK harus 16–20 digit angka. Saat ini ${digits.length} digit.`
+          };
+        }
+
+    /**
+     * #6: Validasi nama lengkap & satuan kerja (minimal panjang + tolak teks sampah).
+     * Mencegah data kotor seperti "sadsdsa", "joajia" masuk ke database.
+     */
+    function validateIdentityText(raw, label, minLen) {
+      const value = String(raw || "").replace(/\s+/g, " ").trim();
+      if (!value) {
+        return { ok: false, value, message: `${label} wajib diisi.` };
+      }
+      return { ok: true, value };
+    }
+
+    /**
+     * PROSES LOGIN & VALIDASI ANTI-DOUBLE SUBMIT
+     */
+    async function handleStartExam() {
+      const namaRaw = document.getElementById("regNama").value.trim();
+      const nipRaw = document.getElementById("regNip").value.trim();
+      const satkerRaw = document.getElementById("regSatker").value.trim();
+      const sesi = document.getElementById("regSesi").value;
+
+      // --- #18: FULLSCREEN HARUS DIPANGGIL DI DALAM GESTURE KLIK ---
+      // requestFullscreen() ditolak browser bila dipanggil setelah await.
+      // Jadi kita panggil SEKARANG, sebelum operasi async apa pun.
+      enterFullscreen();
+
+      if (!namaRaw || !nipRaw || !satkerRaw) {
+        showToast("Harap lengkapi semua kolom pendaftaran terlebih dahulu!", "warning");
+        return;
+      }
+
+      // Nama dan unit kerja free text. Hanya trim/normalisasi spasi.
+      const nama = namaRaw.replace(/\s+/g, " ").trim();
+      const satker = satkerRaw.replace(/\s+/g, " ").trim();
+
+      // --- VALIDASI NIP/NIK (angka saja, 16–20 digit) ---
+      const nipCheck = validateNipNik(nipRaw);
+      if (!nipCheck.ok) {
+        showToast(nipCheck.message, "error");
+        document.getElementById("regNip").focus();
+        return;
+      }
+      const nip = nipCheck.value;
+
+      const submitBtn = document.getElementById("btnSubmitLogin");
+      const btnText = document.getElementById("btnSubmitLoginText");
+      submitBtn.disabled = true;
+      btnText.textContent = "Memvalidasi NIP dan jadwal ke server...";
+
+      let check;
+      try {
+        check = await postWebhook({ action: "CHECK_NIP", nip, sesi, nama });
+      } catch (error) {
+        showToast(`Ujian belum dapat dimulai: ${error.message}`, "error");
+        submitBtn.disabled = false;
+        btnText.textContent = "Mulai Ujian Sekarang";
+        return;
+      }
+
+      try {
+        const existing = check.result || check.data || { exists: false };
+        if (check.status !== "success") {
+          throw new Error(check.message || "Validasi server gagal.");
+        }
+        if (existing.exists) {
+          throw new Error(`NIP/NIK ini sudah pernah menyelesaikan ${sesi}. Percobaan kedua tidak diizinkan.`);
+        }
+        if (check.allowed === false || (check.access && check.access.allowed === false)) {
+          throw new Error(check.message || "Gerbang ujian sedang tertutup.");
+        }
+        if (!check.session || !check.session.token) {
+          throw new Error(
+            "Server belum mengeluarkan sesi ujian. " +
+            "Kemungkinan backend Apps Script masih versi lama — panitia perlu deploy ulang."
+          );
+        }
+
+        // Kunci waktu ujian mengikuti SERVER, bukan jam perangkat peserta.
+        // Kompensasi latensi jaringan (RTT / 2) agar sisa waktu di layar akurat 100%.
+        examState.sessionToken = check.session.token;
+        examState.serverDeadlineMs = new Date(check.session.deadline_iso).getTime();
+        const serverNowMs = Number(check.session.server_epoch_ms) || Date.now();
+        const rttComp = check._rttMs ? Math.round(check._rttMs / 2) : 0;
+        examState.serverClockOffsetMs = (serverNowMs + rttComp) - Date.now();
+      } catch (error) {
+        showToast(error.message, "error");
+        submitBtn.disabled = false;
+        btnText.textContent = "Mulai Ujian Sekarang";
+        return;
+      }
+
+      submitBtn.disabled = false;
+      btnText.textContent = "Mulai Ujian Sekarang";
+
+      currentUser = { nama, nip, satker, sesi };
+
+      // --- #3: PEMULIHAN JAWABAN (RESUME) SETELAH REFRESH ---
+      // Coba ambil progres tersimpan dari server. Bila ada, pakai urutan soal &
+      // jawaban yang SAMA supaya peserta tidak mengulang dari nol.
+      let restoredOrder = null;
+      let restoredAnswers = null;
+      let restoredViolations = null;
+
+      if (check.session && check.session.resumed) {
+        try {
+          const res = await postWebhook({ action: "RESUME", nip, sesi });
+          if (res && res.status === "success" && res.can_resume) {
+            restoredOrder = Array.isArray(res.question_order) ? res.question_order : null;
+            restoredAnswers = res.answers || null;
+            restoredViolations = Array.isArray(res.violations) ? res.violations : null;
+            // Selaraskan deadline dari server (yang penting: JANGAN tambah waktu).
+            if (res.session && res.session.deadline_iso) {
+              examState.serverDeadlineMs = new Date(res.session.deadline_iso).getTime();
+              const srvNow = Number(res.session.server_epoch_ms) || Date.now();
+              const rttComp = res._rttMs ? Math.round(res._rttMs / 2) : 0;
+              examState.serverClockOffsetMs = (srvNow + rttComp) - Date.now();
+            }
+          }
+        } catch (e) {
+          console.warn("Resume server gagal, mencoba cadangan lokal:", e);
+        }
+      }
+
+      // CADANGAN LOKAL: bila server belum menyimpan progres, pulihkan dari localStorage.
+      if (!restoredAnswers || !restoredOrder || !restoredOrder.length) {
+        const local = bacaSesiLokal(nip, sesi);
+        if (local && local.token === examState.sessionToken) {
+          if (!restoredOrder || !restoredOrder.length) restoredOrder = local.order || null;
+          if (!restoredAnswers) restoredAnswers = local.answers || null;
+          if (!restoredViolations) restoredViolations = local.violations || null;
+        }
+      }
+
+      // --- #2: SESI KEDALUWARSA TIDAK BOLEH DAPAT WAKTU BARU ---
+      const sisaDetik = Math.round((examState.serverDeadlineMs - (Date.now() + examState.serverClockOffsetMs)) / 1000);
+      if (sisaDetik <= 0) {
+        // Waktu sudah habis saat login/refresh -> langsung kumpulkan, tanpa 4 menit baru.
+        examState.shuffledQuestions = buildShuffledQuestions(restoredOrder);
+        currentUser = { nama, nip, satker, sesi };
+        examState.isActive = true;
+        examState.startTime = new Date();
+        if (restoredAnswers) examState.userAnswers = restoredAnswers;
+        if (restoredViolations) {
+          examState.violationLogs = restoredViolations;
+          examState.strikeCount = restoredViolations.filter(v => String(v.type || "").indexOf("DUPLIKAT") === -1).length;
+        }
+        showInfoModal("Waktu Ujian Telah Habis",
+          "Sesi Anda sudah melewati batas waktu. Jawaban yang tersimpan akan dikumpulkan otomatis.",
+          "Mengirim jawaban Anda ke server...");
+        await finishExam("SELESAI (Waktu Habis)");
+        return;
+      }
+
+      // Inisialisasi soal dan opsi tanpa membawa kunci jawaban ke browser.
+      examState.shuffledQuestions = buildShuffledQuestions(restoredOrder);
+
+      // Pemulihan jawaban (bila ada)
+      if (restoredAnswers) {
+        examState.userAnswers = restoredAnswers;
+      }
+      if (restoredViolations) {
+        examState.violationLogs = restoredViolations;
+        examState.strikeCount = restoredViolations.filter(v => String(v.type || "").indexOf("DUPLIKAT") === -1).length;
+        if (examState.strikeCount > 0) {
+          document.getElementById("strikeBadge").classList.remove("hidden");
+          document.getElementById("strikeBadgeCount").textContent = examState.strikeCount;
+        }
+      }
+
+      // Transisi Layar (fullscreen sudah diminta di awal fungsi)
+      document.getElementById("screenRegister").classList.add("hidden");
+      document.getElementById("screenExam").classList.remove("hidden");
+      document.getElementById("headerExamInfo").classList.remove("hidden");
+
+      // Set Info Header
+      document.getElementById("hdrUserNama").textContent = currentUser.nama;
+      document.getElementById("hdrUserSesi").textContent = currentUser.sesi;
+
+      // Inisialisasi Watermark Dinamis (global, selalu tampil)
+      buildWatermarkLayer();
+
+      // Inisialisasi Navigasi & Render Soal Pertama
+      buildQuickNav();
+      examState.isActive = true;
+      examState.startTime = new Date();
+      renderQuestion(0);
+      updateProgressBar();
+      startTimer();
+
+      if (restoredAnswers) {
+        showToast("Sesi dipulihkan. Jawaban Anda sebelumnya tetap tersimpan.", "info");
+      }
+
+      // Simpan backup awal di LocalStorage
+      saveToLocalStorage();
+    }
+
+    /**
+     * Bangun daftar soal teracak. Bila ada urutan tersimpan (resume),
+     * pakai urutan itu agar jawaban tetap cocok dengan soalnya.
+     */
+    function buildShuffledQuestions(restoredOrder) {
+      const byId = {};
+      MASTER_QUESTIONS.forEach(q => { byId[String(q.id)] = q; });
+      if (restoredOrder && restoredOrder.length) {
+        const rebuilt = [];
+        restoredOrder.forEach(entry => {
+          const src = byId[String(entry.id)];
+          if (!src) return;
+          const opts = (entry.options && entry.options.length)
+            ? entry.options.filter(o => src.options.indexOf(o) !== -1)
+            : src.options.slice();
+          rebuilt.push({ id: src.id, topic: src.topic, question: src.question, options: opts });
+        });
+        if (rebuilt.length === MASTER_QUESTIONS.length) return rebuilt;
+      }
+      return shuffleArray(MASTER_QUESTIONS).map(q => ({
+        id: q.id, topic: q.topic, question: q.question, options: shuffleArray(q.options)
+      }));
+    }
+
+    /**
+     * FULLSCREEN HANDLERS
+     */
+    function enterFullscreen() {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(err => console.log("Fullscreen request rejected", err));
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
+      }
+    }
+
+    function reEnterFullscreen() {
+      document.getElementById("modalFullscreenLost").classList.add("hidden");
+      enterFullscreen();
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!examState.isActive || examState.isFinished) return;
+      if (!document.fullscreenElement) {
+        // Terdeteksi keluar fullscreen -> dihitung sebagai pelanggaran
+        document.getElementById("modalFullscreenLost").classList.remove("hidden");
+        handleViolationTrigger("FULLSCREEN_EXIT", "Peserta menekan ESC atau keluar dari mode fullscreen.");
+      }
+    });
+
+    /**
+     * SISTEM ANTI-NGINTIP (TAB SWITCH & BLUR DETECTION)
+     */
+    document.addEventListener("visibilitychange", () => {
+      if (!examState.isActive || examState.isFinished) return;
+      if (document.hidden) {
+        handleViolationTrigger("TAB_SWITCH", "Peserta berpindah ke tab lain.");
+      }
+    });
+
+    window.addEventListener("blur", () => {
+      if (!examState.isActive || examState.isFinished) return;
+      setTimeout(() => {
+        if (!document.hasFocus() && examState.isActive && !examState.isFinished) {
+          handleViolationTrigger("WINDOW_BLUR", "Peserta mengalihkan jendela browser ke aplikasi lain.");
+        }
+      }, 400);
+    });
+
+    /**
+     * DEBOUNCE: satu perpindahan jendela hanya dihitung SATU pelanggaran,
+     * walaupun browser memicu "visibilitychange" dan "blur" sekaligus.
+     */
+    var VIOLATION_DEBOUNCE_MS = 2500;
+
+    function handleViolationTrigger(type, message) {
+      const now = Date.now();
+      if (now - examState.lastViolationAt < VIOLATION_DEBOUNCE_MS) {
+        // Peristiwa ganda dari satu kejadian yang sama -> catat tanpa menambah strike.
+        recordViolation(type + "_DUPLIKAT", message + " (peristiwa ganda, tidak menambah strike)");
+        return;
+      }
+      examState.lastViolationAt = now;
+
+      examState.strikeCount++;
+      recordViolation(type, message);
+
+      const count = examState.strikeCount;
+      document.getElementById("strikeBadge").classList.remove("hidden");
+      document.getElementById("strikeBadgeCount").textContent = count;
+
+      if (count >= 3) {
+        // Strike 3: DISKUALIFIKASI & AUTO-SUBMIT
+        // Jangan pakai alert(): memblokir submit. Tampilkan modal non-blocking.
+        showInfoModal("Ujian Dihentikan — Diskualifikasi",
+          "Anda telah melakukan 3 kali pelanggaran jendela/tab. Ujian otomatis dihentikan dan jawaban diserahkan ke panitia.",
+          "Mengirim jawaban Anda ke server...");
+        finishExam("DISKUALIFIKASI (3x Pelanggaran Jendela/Tab)");
+      } else {
+        // Tampilkan Modal Peringatan 1 atau 2
+        document.getElementById("violationCountLabel").textContent = count;
+        document.getElementById("modalViolation").classList.remove("hidden");
+      }
+    }
+
+    function recordViolation(type, message) {
+      examState.violationLogs.push({
+        time: new Date().toLocaleTimeString("id-ID"),
+        type: type,
+        message: message,
+        questionIndex: examState.currentIndex + 1
+      });
+      saveToLocalStorage();
+    }
+
+    function resumeExamFromViolation() {
+      document.getElementById("modalViolation").classList.add("hidden");
+      enterFullscreen();
+    }
+
+    /**
+     * SISTEM ANTI-SCREENSHOT & KEYBOARD INTERCEPTOR
+     */
+    window.addEventListener("keydown", (e) => {
+      if (!examState.isActive || examState.isFinished) return;
+
+      // 1. Blokir Tombol PrintScreen (dihitung sebagai pelanggaran)
+      if (e.key === "PrintScreen" || e.keyCode === 44) {
+        e.preventDefault();
+        triggerScreenBlur();
+        cleanClipboard();
+        handleViolationTrigger("SCREENSHOT_ATTEMPT", "Peserta mencoba menekan tombol PrintScreen.");
+        return false;
+      }
+
+      // 2. Blokir Shortcut Inspect (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+      //    #14: konsisten dengan PrintScreen -> dihitung sebagai pelanggaran (strike).
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u"))
+      ) {
+        e.preventDefault();
+        handleViolationTrigger("INSPECT_ELEMENT_ATTEMPT", "Peserta mencoba membuka Developer Tools.");
+        return false;
+      }
+
+      // 3. Blokir Copy, Cut, Select All, Print, Save — TAPI izinkan Paste (Ctrl+V)
+      //    #13: peserta boleh menempel NIP/NIK dari clipboard (18 digit rawan salah ketik).
+      const isEditable = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+      if (e.ctrlKey && (e.key === "v" || e.key === "V") && isEditable) {
+        return true; // izinkan paste di field input
+      }
+      if (e.ctrlKey && (e.key === "c" || e.key === "C" || e.key === "v" || e.key === "V" || e.key === "x" || e.key === "X" || e.key === "a" || e.key === "A" || e.key === "p" || e.key === "P" || e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        return false;
+      }
+    }, true);
+
+    /**
+     * #20: PROTEKSI LAYAR HASIL (deterrence, tanpa strike).
+     * Ujian sudah selesai -> tidak ada strike, tapi layar hasil tetap mengandung
+     * identitas + kode verifikasi. Saat PrintScreen ditekan, layar diburamkan
+     * sesaat + clipboard dibersihkan, sehingga hasil tangkapan tidak berguna.
+     * Catatan jujur: Win+Shift+S / Snipping Tool / kamera HP tetap tidak bisa
+     * dicegah (batasan web) — watermark permanen adalah jaring terakhir.
+     */
+    window.addEventListener("keydown", (e) => {
+      if (!examState.isFinished) return;
+      if (e.key === "PrintScreen" || e.keyCode === 44) {
+        e.preventDefault();
+        triggerScreenBlur();
+        cleanClipboard();
+        const screenResult = document.getElementById("screenResult");
+        if (screenResult && !screenResult.classList.contains("hidden")) {
+          screenResult.classList.add("screen-scramble");
+          setTimeout(() => screenResult.classList.remove("screen-scramble"), 2000);
+        }
+        showToast("Layar hasil dilindungi watermark. Tangkapan layar tidak dapat diverifikasi keasliannya.", "warning");
+        return false;
+      }
+    }, true);
+
+    function triggerScreenBlur() {
+      const container = document.getElementById("appContainer");
+      container.classList.add("screen-scramble");
+      setTimeout(() => {
+        container.classList.remove("screen-scramble");
+      }, 2000);
+    }
+
+    function cleanClipboard() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText("").catch(() => {});
+      }
+    }
+
+    /**
+     * DYNAMIC WATERMARK BUILDER
+     */
+    function buildWatermarkLayer() {
+      const layer = document.getElementById("watermarkLayer");
+      if (!layer) return;
+      layer.innerHTML = "";
+      const nama = (currentUser && currentUser.nama) ? currentUser.nama.toUpperCase() : "PESERTA";
+      const nip = (currentUser && currentUser.nip) ? currentUser.nip : "-";
+      const text = `${nama} • ${nip} • DPKI BRIN`;
+      for (let i = 0; i < 40; i++) {
+        const span = document.createElement("div");
+        span.className = "watermark-item";
+        span.textContent = text;
+        layer.appendChild(span);
+      }
+      // Watermark global: pastikan tetap tampil di semua layar (termasuk hasil).
+      layer.classList.remove("hidden");
+    }
+
+    /**
+     * RENDER SOAL & NAVIGASI DENGAN INTERACTIVE OPTION CARDS
+     */
+    const QUESTION_TIME_SECONDS = 45;
+    const AUTO_ADVANCE_ON_TIMEOUT = true;
+    let questionTimerInterval = null;
+    let questionDeadlineMs = null;
+
+    function renderQuestion(index) {
+      if (index < 0 || index >= examState.shuffledQuestions.length) return;
+      examState.currentIndex = index;
+      const q = examState.shuffledQuestions[index];
+      document.getElementById("currentQuestionNumDisplay").textContent = index + 1;
+      document.getElementById("questionTopicBadge").textContent = q.topic;
+      document.getElementById("questionText").textContent = q.question;
+      const container = document.getElementById("optionsContainer");
+      container.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+      const savedAnswer = examState.userAnswers[index];
+      q.options.forEach((optText, optIdx) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "w-full text-left p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-800 hover:border-blue-400 transition flex items-center gap-3";
+        b.innerHTML = `<span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold">${letters[optIdx]}</span><span class="text-sm leading-relaxed">${optText}</span>`;
+        if (savedAnswer === optText) b.classList.add("border-brinNavy", "bg-blue-50");
+        b.onclick = () => selectOption(index, optText);
+        container.appendChild(b);
+      });
+      const status = document.getElementById("ansStatusLabel");
+      status.textContent = savedAnswer ? "Sudah Terjawab" : "Belum Dijawab";
+      status.className = savedAnswer ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold";
+      document.getElementById("btnPrev").classList.add("hidden");
+      const last = index === examState.shuffledQuestions.length - 1;
+      document.getElementById("btnNext").classList.toggle("hidden", last);
+      document.getElementById("btnSubmitExam").classList.toggle("hidden", !last);
+      updateQuickNavUI();
+      updateProgressBar();
+      startQuestionTimer();
+    }
+
+    function selectOption(qIndex, selectedText) {
+      examState.userAnswers[qIndex] = selectedText;
+      saveToLocalStorage();
+      scheduleProgressSync();   // simpan ke server (debounce) -> pemulihan bila refresh
+      renderQuestion(qIndex);
+      updateProgressBar();
+    }
+
+    /**
+     * Sinkronisasi progres jawaban ke server (debounce 3 detik).
+     * Menjamin jawaban tetap ada bila peserta refresh / koneksi putus.
+     */
+    let progressSyncTimer = null;
+    function scheduleProgressSync() {
+      if (progressSyncTimer) clearTimeout(progressSyncTimer);
+      progressSyncTimer = setTimeout(syncProgressNow, 3000);
+    }
+
+    async function syncProgressNow() {
+      if (!examState.isActive || examState.isFinished || !examState.sessionToken) return;
+      try {
+        const order = examState.shuffledQuestions.map(q => ({ id: q.id, options: q.options }));
+        await postWebhook({
+          action: "SAVE_PROGRESS",
+          session_token: examState.sessionToken,
+          answers: examState.userAnswers,
+          question_order: order,
+          violations: examState.violationLogs
+        });
+      } catch (e) {
+        console.warn("Sinkronisasi progres gagal (akan dicoba lagi):", e);
+      }
+    }
+
+    function navigateQuestion(step) {
+      if (step < 0) return;
+      const nextIdx = examState.currentIndex + step;
+      if (nextIdx < examState.shuffledQuestions.length) renderQuestion(nextIdx);
+    }
+
+    function buildQuickNav() {
+      const container = document.getElementById("quickNavContainer");
+      if (container) container.classList.add("hidden");
+    }
+
+    function updateQuickNavUI() {}
+
+    function startQuestionTimer() {
+      const display = document.getElementById("timerDisplay");
+      if (questionTimerInterval) clearInterval(questionTimerInterval);
+      questionDeadlineMs = Date.now() + QUESTION_TIME_SECONDS * 1000;
+      function tick() {
+        const left = Math.max(0, Math.ceil((questionDeadlineMs - Date.now()) / 1000));
+        display.textContent = `00:${String(left).padStart(2, "0")}`;
+        if (left === 0) {
+          clearInterval(questionTimerInterval);
+          questionTimerInterval = null;
+          if (!examState.userAnswers[examState.currentIndex] && AUTO_ADVANCE_ON_TIMEOUT) {
+            saveToLocalStorage();
+            syncProgressNow();
+          }
+          if (examState.currentIndex < examState.shuffledQuestions.length - 1) {
+            renderQuestion(examState.currentIndex + 1);
+          } else if (!examState.isFinished) {
+            finishExam("SELESAI (Soal Terakhir Waktu Habis)");
+          }
+        }
+      }
+      tick();
+      questionTimerInterval = setInterval(tick, 250);
+    }
+
+    function startTimer() {
+      startQuestionTimer();
+      startHeartbeat();
+    }
+
+    /**
+     * HEARTBEAT: menyegarkan sisa waktu resmi dari server setiap 30 detik.
+     * Ini membuat perubahan jam perangkat tidak berpengaruh.
+     */
+    function startHeartbeat() {
+      if (examState.heartbeatInterval) clearInterval(examState.heartbeatInterval);
+      examState.heartbeatInterval = setInterval(async () => {
+        if (!examState.isActive || examState.isFinished || !examState.sessionToken) return;
+        try {
+          const hb = await postWebhook({ action: "HEARTBEAT", session_token: examState.sessionToken });
+          if (hb && hb.status === "success") {
+            const rttComp = hb._rttMs ? Math.round(hb._rttMs / 2) : 0;
+            if (hb.server_epoch_ms) examState.serverClockOffsetMs = (Number(hb.server_epoch_ms) + rttComp) - Date.now();
+            if (hb.deadline_iso) examState.serverDeadlineMs = new Date(hb.deadline_iso).getTime();
+            if (hb.finished && !examState.isFinished) {
+              showInfoModal("Sesi Ditutup Server",
+                "Sesi ujian ini telah ditutup oleh server. Jawaban Anda sedang dikumpulkan.",
+                "Mengirim jawaban Anda ke server...");
+              finishExam("SELESAI (Sesi Ditutup Server)");
+            }
+          }
+        } catch (err) {
+          console.warn("Heartbeat gagal:", err);
+        }
+      }, 30000);
+    }
+
+    function stopHeartbeat() {
+      if (examState.heartbeatInterval) {
+        clearInterval(examState.heartbeatInterval);
+        examState.heartbeatInterval = null;
+      }
+    }
+
+    /**
+     * ANIMATED SCORE COUNTER (0 -> FINAL SCORE SMOOTH COUNT)
+     */
+    function animateScoreCounter(targetScore, duration = 1200) {
+      const scoreEl = document.getElementById("finalScoreDisplay");
+      if (!scoreEl) return;
+
+      const finalScore = Number(targetScore) || 0;
+      // Tampilkan nilai akhir lebih dulu agar tidak pernah macet di "0"
+      // bila requestAnimationFrame di-throttle (tab tidak aktif).
+      scoreEl.textContent = finalScore;
+      if (finalScore === 0) return;
+
+      let settled = false;
+      function settle() {
+        if (settled) return;
+        settled = true;
+        scoreEl.textContent = finalScore;
+      }
+
+      const startTime = performance.now();
+      function step(currentTime) {
+        if (settled) return;
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Easing cubic ease-out
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        scoreEl.textContent = Math.round(easeProgress * finalScore);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          settle();
+        }
+      }
+      requestAnimationFrame(step);
+      // Jaring pengaman: pastikan angka akhir tetap tampil.
+      setTimeout(settle, duration + 400);
+    }
+
+    /**
+     * SUBMIT & SERVER-SIDE SCORING
+     */
+    function confirmSubmitExam() {
+      const answeredCount = Object.keys(examState.userAnswers).length;
+      const totalCount = examState.shuffledQuestions.length;
+
+      let msg = `Anda telah menjawab ${answeredCount} dari ${totalCount} soal. Yakin ingin mengakhiri dan mengirim ujian?`;
+      if (answeredCount < totalCount) {
+        msg = `PERHATIAN: Masih ada ${totalCount - answeredCount} soal yang BELUM dijawab!\n\nApakah Anda tetap ingin menyelesaikan ujian ini?`;
+      }
+
+      showConfirmModal("Konfirmasi Selesai Ujian", msg, "Ya, Kirim Jawaban", () => {
+        showInfoModal("Mengirim Jawaban",
+          "Jawaban Anda sedang dinilai dan dikirim ke server...",
+          "Mengirim jawaban Anda ke server...");
+        finishExam("SELESAI NORMAL");
+      });
+    }
+
+    /**
+     * Modal konfirmasi non-blocking (pengganti confirm()).
+     */
+    function showConfirmModal(title, message, okLabel, onOk) {
+      const el = document.createElement("div");
+      el.className = "fixed inset-0 z-[95] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4";
+      el.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-brinNavy">
+          <div class="w-14 h-14 mx-auto rounded-full bg-blue-100 text-brinNavy flex items-center justify-center mb-4">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900 uppercase mb-2">${title}</h3>
+          <p class="text-sm text-slate-600 mb-5 whitespace-pre-line">${String(message).replace(/</g, "&lt;")}</p>
+          <div class="flex gap-3">
+            <button type="button" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl transition cursor-pointer" data-role="cancel">Batal</button>
+            <button type="button" class="flex-1 bg-brinNavy hover:bg-blue-900 text-white font-bold py-3 rounded-xl transition cursor-pointer" data-role="ok">${okLabel}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(el);
+      const close = () => el.remove();
+      el.querySelector('[data-role="cancel"]').onclick = close;
+      el.querySelector('[data-role="ok"]').onclick = () => { close(); onOk(); };
+    }
+
+    async function finishExam(completionReason) {
+      if (examState.isFinished) return;
+      examState.isFinished = true;
+      examState.isActive = false;
+      examState.endTime = new Date();
+      clearInterval(examState.timerInterval);
+
+      const totalQuestions = examState.shuffledQuestions.length;
+      const diffSec = Math.max(0, Math.round((examState.endTime - examState.startTime) / 1000));
+      const durasiStr = `${Math.floor(diffSec / 60)} mnt ${diffSec % 60} dtk`;
+      const answers = examState.shuffledQuestions.map((q, idx) => ({
+        question_id: q.id,
+        answer: examState.userAnswers[idx] || ""
+      }));
+
+      // Kirim juga urutan soal -> server menyimpannya agar bisa dipulihkan bila perlu.
+      const questionOrder = examState.shuffledQuestions.map(q => ({ id: q.id, options: q.options }));
+
+      let serverResult;
+      try {
+        serverResult = await postWebhook({
+          action: "SCORE_AND_SUBMIT",
+          session_token: examState.sessionToken,
+          nip: currentUser.nip,
+          nama: currentUser.nama,
+          satker: currentUser.satker,
+          sesi: currentUser.sesi,
+          answers,
+          question_order: questionOrder,
+          durasi: durasiStr,
+          violations: examState.violationLogs,
+          completion_reason: completionReason,
+          ip_address: deviceTelemetry.ip,
+          os: deviceTelemetry.os,
+          browser: deviceTelemetry.browser,
+          resolusi: deviceTelemetry.resolusi
+        });
+        if (serverResult.status !== "success" || !serverResult.result) {
+          throw new Error(serverResult.message || "Hasil ditolak server.");
+        }
+      } catch (error) {
+        // PEMULIHAN OTOMATIS (temuan 3 Okt 2026): Apps Script kadang membalas 404
+        // dari tahap redirect WALAU jawaban SUDAH tersimpan di server. Sebelum
+        // menyatakan gagal, tanyakan ke server apakah sebenarnya sudah masuk.
+        // Tanpa ini, peserta melihat "gagal" padahal nilainya sudah tercatat,
+        // dan berisiko submit ganda / panik.
+        let sudahTersimpan = null;
+        try {
+          const cek = await postWebhook({
+            action: "RESUME",
+            nip: currentUser.nip,
+            sesi: currentUser.sesi
+          });
+          if (cek && cek.already_finished && cek.result) sudahTersimpan = cek.result;
+        } catch (e2) { /* server memang tidak bisa dihubungi */ }
+
+        if (sudahTersimpan) {
+          // Jawaban SUDAH tersimpan -> tampilkan hasilnya, jangan bikin panik.
+          serverResult = {
+            status: "success",
+            result: {
+              score: Number(sudahTersimpan.skor) || 0,
+              correct: null,
+              wrong: null,
+              integrity_status: "TERSIMPAN DI SERVER (pemulihan otomatis)",
+              durasi: durasiStr,
+              verification_code: sudahTersimpan.verification_code || ""
+            }
+          };
+          showToast("Jawaban Anda tersimpan di server. Menampilkan hasil...", "success");
+        } else {
+          examState.isFinished = false;
+          examState.isActive = true;
+          startTimer();
+          hideInfoModal();
+          showToast(`Jawaban belum tersimpan: ${error.message}. Jangan tutup halaman — coba kirim kembali atau hubungi panitia.`, "error");
+          return;
+        }
+      }
+
+      stopHeartbeat();
+      hideInfoModal();
+      const score = Number(serverResult.result.score);
+      const correctCount = Number(serverResult.result.correct);
+      const wrongCount = Number(serverResult.result.wrong);
+      const statusIntegritas = serverResult.result.integrity_status;
+      // #8: durasi resmi dari server (klien tidak lagi menentukan durasi).
+      const durasiServer = serverResult.result.durasi || durasiStr;
+      // #7: kode verifikasi resmi dari server (bukan dibuat di browser).
+      const verifCodeServer = serverResult.result.verification_code || "";
+
+      // Keluar Fullscreen jika masih aktif
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+
+      // Tampilkan Screen Hasil
+      document.getElementById("screenExam").classList.add("hidden");
+      document.getElementById("screenResult").classList.remove("hidden");
+      document.getElementById("headerExamInfo").classList.add("hidden");
+
+      // Jalankan Animasi Penghitung Skor (0 -> score)
+      animateScoreCounter(score);
+
+      // Hitung Achievement Badge Predikat
+      const achievementBadgeEl = document.getElementById("achievementBadge");
+      let predikatText = "";
+      if (score >= 80) {
+        predikatText = "PREDIKAT: SANGAT BAIK";
+        achievementBadgeEl.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-sm ring-2 ring-emerald-300";
+      } else if (score >= 60) {
+        predikatText = "PREDIKAT: BAIK";
+        achievementBadgeEl.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white shadow-sm ring-2 ring-blue-300";
+      } else if (score >= 40) {
+        predikatText = "PREDIKAT: CUKUP";
+        achievementBadgeEl.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white shadow-sm ring-2 ring-blue-300";
+      } else {
+        predikatText = "PREDIKAT: KURANG";
+        achievementBadgeEl.className = "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-sm ring-2 ring-red-300";
+      }
+      achievementBadgeEl.textContent = predikatText;
+
+      // Rincian Hasil & Skor
+      document.getElementById("resBenar").textContent = correctCount;
+      document.getElementById("resSalah").textContent = wrongCount;
+      document.getElementById("resNama").textContent = currentUser.nama;
+      document.getElementById("resNip").textContent = currentUser.nip;
+      document.getElementById("resSesi").textContent = currentUser.sesi;
+      document.getElementById("resDeviceDetail").textContent = `${deviceTelemetry.ip} (${deviceTelemetry.os}, ${deviceTelemetry.browser})`;
+
+      // Status integritas berasal dari hitungan log pelanggaran di server.
+      const integritasEl = document.getElementById("resIntegritas");
+      integritasEl.textContent = statusIntegritas;
+      if (examState.violationLogs.length === 0) {
+        integritasEl.className = "font-bold text-emerald-600";
+      } else if (examState.violationLogs.length < 3) {
+        integritasEl.className = "font-bold text-amber-600";
+      } else {
+        integritasEl.className = "font-bold text-red-600";
+        document.getElementById("resultTitle").textContent = "Ujian Dihentikan (Diskualifikasi)";
+        document.getElementById("resultIconBox").className = "w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3 shadow";
+        document.getElementById("resultIconBox").innerHTML = `
+          <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        `;
+      }
+
+      // #7 & #8: kode verifikasi & durasi resmi berasal dari SERVER (anti-pemalsuan).
+      const dateCode = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const verifCode = verifCodeServer || `BRIN-DPKI-CBT-${dateCode}-OFFLINE`;
+      
+      const verifCodeEl = document.getElementById("resVerificationCode");
+      if (verifCodeEl) verifCodeEl.textContent = verifCode;
+
+      const resSatkerReceiptEl = document.getElementById("resSatkerReceipt");
+      if (resSatkerReceiptEl) resSatkerReceiptEl.textContent = currentUser.satker || "-";
+
+      const resTimestampReceiptEl = document.getElementById("resTimestampReceipt");
+      if (resTimestampReceiptEl) {
+        const tzCode = window.detectedUserTimezone ? window.detectedUserTimezone.code : "WIB";
+        resTimestampReceiptEl.textContent = `${new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "medium" })} ${tzCode}`;
+      }
+
+      const resDurasiReceiptEl = document.getElementById("resDurasiReceipt");
+      if (resDurasiReceiptEl) resDurasiReceiptEl.textContent = durasiServer;
+
+      const resScoreReceiptTextEl = document.getElementById("resScoreReceiptText");
+      if (resScoreReceiptTextEl) {
+        resScoreReceiptTextEl.textContent = `${score} / 100 (${predikatText.replace("PREDIKAT: ", "")})`;
+      }
+
+      // Bukti lokal hanya dibuat setelah server mengonfirmasi penyimpanan.
+      const payload = {
+        action: "SCORE_AND_SUBMIT",
+        timestamp: serverResult.result.submitted_at,
+        nip: currentUser.nip,
+        nama: currentUser.nama,
+        satker: currentUser.satker,
+        sesi: currentUser.sesi,
+        skor: score,
+        jumlah_benar: correctCount,
+        jumlah_salah: wrongCount,
+        durasi: durasiServer,
+        pelanggaran_tab: examState.violationLogs.length,
+        status_integritas: statusIntegritas,
+        ip_address: deviceTelemetry.ip,
+        os: deviceTelemetry.os,
+        browser: deviceTelemetry.browser,
+        resolusi: deviceTelemetry.resolusi
+      };
+      window.lastExamResult = payload;
+      hapusSesiLokal();
+      saveToLocalStorage();
+
+      const statusEl = document.getElementById("resWebhookStatus");
+      statusEl.textContent = "Berhasil Dinilai dan Tersimpan di Spreadsheet Panitia";
+      statusEl.className = "font-semibold text-emerald-600";
+    }
+
+    async function postWebhook(payload) {
+      if (!GOOGLE_SHEETS_WEBHOOK_URL) throw new Error("URL webhook belum dikonfigurasi.");
+
+      // OPTIMASI BEBAN (uji 3 Okt 2026): saat banyak peserta submit hampir
+      // bersamaan, server bisa membalas "Server sibuk". Coba ulang otomatis
+      // dengan jeda singkat supaya peserta tidak perlu klik manual.
+      const MAKS_COBA = 6;
+      let terakhirErr = null;
+      for (let coba = 1; coba <= MAKS_COBA; coba++) {
+        const t0 = Date.now();
+        try {
+          const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`Server HTTP ${response.status}`);
+          const data = await response.json();
+          if (data && typeof data === "object") {
+            data._rttMs = Date.now() - t0;
+          }
+          // Server sibuk -> tunggu sebentar lalu coba lagi (jangan tampilkan gagal).
+          if (data && data.busy) {
+            const jeda = (Number(data.retry_after_seconds) || 5) * 1000;
+            if (coba < MAKS_COBA) {
+              showToast(`Server sedang ramai, mencoba lagi (${coba}/${MAKS_COBA - 1})...`, "warning");
+              await new Promise(r => setTimeout(r, jeda));
+              continue;
+            }
+            throw new Error("Server masih sibuk. Mohon tunggu sebentar lalu coba lagi.");
+          }
+          return data;
+        } catch (err) {
+          terakhirErr = err;
+          // Kegagalan jaringan sementara -> coba ulang dengan backoff.
+          // PENTING (temuan 3 Okt 2026): Apps Script mengembalikan 404 intermiten
+          // dari tahap redirect script.googleusercontent.com. Ini gangguan
+          // SEMENTARA, bukan kode salah — WAJIB dicoba ulang, jangan langsung
+          // dinyatakan gagal ke peserta.
+          if (coba < MAKS_COBA && /fetch|network|Failed|HTTP (404|408|429|5\d\d)/i.test(String(err && err.message || err))) {
+            await new Promise(r => setTimeout(r, 1500 * coba));
+            continue;
+          }
+          throw err;
+        }
+      }
+      throw terakhirErr || new Error("Gagal menghubungi server.");
+    }
+
+    /**
+     * FITUR CADANGAN: UNDUH BUKTI UJIAN (JSON)
+     */
+    function downloadResultJson() {
+      const data = window.lastExamResult;
+      if (!data) return;
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const cleanName = (data.nama || "Peserta").replace(/[^a-zA-Z0-9]/g, "_");
+      a.href = url;
+      a.download = `Hasil_CBT_BRIN_${cleanName}_${data.sesi}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /**
+     * LOCAL STORAGE PERSISTENCE
+     */
+    function saveToLocalStorage() {
+      try {
+        const cache = {
+          user: currentUser,
+          answers: examState.userAnswers,
+          strikes: examState.strikeCount,
+          logs: examState.violationLogs,
+          result: window.lastExamResult || null
+        };
+        localStorage.setItem("cbt_datanova_brin_cache", JSON.stringify(cache));
+
+        // Simpan juga sesi per-NIP+sesi (untuk pemulihan setelah refresh).
+        if (examState.isActive && !examState.isFinished && examState.sessionToken && currentUser) {
+          const key = "cbt_sesi_" + currentUser.nip + "_" + String(currentUser.sesi).toLowerCase();
+          const sesi = {
+            token: examState.sessionToken,
+            nip: currentUser.nip,
+            sesi: currentUser.sesi,
+            answers: examState.userAnswers,
+            order: examState.shuffledQuestions.map(q => ({ id: q.id, options: q.options })),
+            violations: examState.violationLogs,
+            strikes: examState.strikeCount,
+            savedAt: Date.now()
+          };
+          localStorage.setItem(key, JSON.stringify(sesi));
+        }
+      } catch (e) {
+        console.warn("Gagal menyimpan ke LocalStorage:", e);
+      }
+    }
+
+    /**
+     * Baca sesi tersimpan (cadangan lokal) untuk pemulihan setelah refresh.
+     * Hanya berlaku bila token sesi cocok (sesi yang sama dari server).
+     */
+    function bacaSesiLokal(nip, sesi) {
+      try {
+        const key = "cbt_sesi_" + nip + "_" + String(sesi).toLowerCase();
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        // Abaikan bila sudah lebih dari 2 jam (sesi sudah pasti tidak berlaku).
+        if (data.savedAt && (Date.now() - data.savedAt) > 2 * 60 * 60 * 1000) return null;
+        return data;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    /** Hapus sesi lokal setelah ujian selesai dikirim. */
+    function hapusSesiLokal() {
+      try {
+        if (currentUser) {
+          localStorage.removeItem("cbt_sesi_" + currentUser.nip + "_" + String(currentUser.sesi).toLowerCase());
+        }
+      } catch (e) { /* abaikan */ }
+    }
+  </script>
+</body>
+</html>
