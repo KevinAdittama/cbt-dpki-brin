@@ -74,7 +74,7 @@
         background: white !important;
         color: black !important;
       }
-      header, footer, #screenRegister, #screenBriefing, #screenExam, #modalViolation, #modalFullscreenLost, .watermark-overlay, button, #resultIconBox, #resultTitle, #resultSubtitle {
+      header, footer, #screenRegister, #screenBriefing, #screenExam, #modalViolation, #modalFullscreenLost, #modalAutoResume, .watermark-overlay, button, #resultIconBox, #resultTitle, #resultSubtitle {
         display: none !important;
       }
       #screenResult {
@@ -633,6 +633,42 @@
     </div>
 
     <!-- ======================================================== -->
+    <!-- MODAL OVERLAY: AUTO-RESUME SESI AKTIF                     -->
+    <!-- ======================================================== -->
+    <div id="modalAutoResume" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-2 border-blue-500">
+        <div class="w-14 h-14 mx-auto rounded-full bg-blue-100 text-brinNavy flex items-center justify-center mb-3">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 uppercase">Sesi Ujian Ditemukan!</h3>
+        <p class="text-sm text-slate-600 my-2">
+          Halo, <strong id="autoResumeNama" class="text-slate-800">-</strong>.<br>
+          Ujian Anda terdeteksi masih berlangsung. Jawaban dan progres Anda tersimpan dengan aman.
+        </p>
+        <div class="bg-blue-50 text-slate-700 rounded-xl p-3 text-xs mb-4 border border-blue-100 text-left space-y-1">
+          <div>NIP/NIK: <strong id="autoResumeNip" class="font-mono text-slate-900">-</strong></div>
+          <div>Sesi: <strong id="autoResumeSesi" class="text-brinNavy font-semibold">-</strong></div>
+          <div class="text-slate-500 text-[11px] pt-1">Klik tombol di bawah untuk langsung melanjutkan ujian tanpa mengisi formulir kembali.</div>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="dismissAutoResume()"
+            class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition cursor-pointer">
+            Mulai Baru
+          </button>
+          <button type="button" onclick="confirmAutoResume()"
+            class="flex-1 bg-brinNavy hover:bg-blue-900 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>Lanjutkan Ujian Saya</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
     <!-- TOAST NOTIFIKASI NON-BLOCKING (pengganti alert)           -->
     <!-- ======================================================== -->
     <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-96 pointer-events-none"></div>
@@ -931,11 +967,77 @@
     };
 
     /**
+     * AUTO-RESUME INSTAN: DETEKSI SESI AKTIF SETELAH REFRESH / TERPUTUS
+     */
+    let autoResumeCandidate = null;
+
+    function checkAutoResumeOnLoad() {
+      try {
+        const rawCache = localStorage.getItem("cbt_datanova_brin_cache");
+        if (!rawCache) return;
+        const cache = JSON.parse(rawCache);
+
+        // Kasus 1: Peserta sudah selesai ujian dan sudah submit -> tampilkan tanda terima
+        if (cache.result && cache.result.verification_code) {
+          window.lastExamResult = cache.result;
+          currentUser = cache.user || { nama: "Peserta", nip: "-", satker: "-", sesi: "Pre-Test" };
+          document.getElementById("screenRegister").classList.add("hidden");
+          const screenBriefing = document.getElementById("screenBriefing");
+          if (screenBriefing) screenBriefing.classList.add("hidden");
+          document.getElementById("screenExam").classList.add("hidden");
+          document.getElementById("screenResult").classList.remove("hidden");
+
+          const resScoreNumber = document.getElementById("resScoreNumber");
+          if (resScoreNumber) resScoreNumber.textContent = cache.result.score || 0;
+          const resNip = document.getElementById("resNip");
+          if (resNip) resNip.textContent = currentUser.nip || "-";
+          const resNama = document.getElementById("resNama");
+          if (resNama) resNama.textContent = currentUser.nama || "-";
+          const resVerifCode = document.getElementById("resVerifCode");
+          if (resVerifCode) resVerifCode.textContent = cache.result.verification_code || "-";
+          return;
+        }
+
+        // Kasus 2: Ada sesi ujian yang belum selesai
+        if (cache.user && cache.user.nip) {
+          const currentSesiVal = document.getElementById("regSesi").value || cache.user.sesi;
+          const localSesi = bacaSesiLokal(cache.user.nip, currentSesiVal);
+          if (localSesi && localSesi.token) {
+            autoResumeCandidate = cache.user;
+            document.getElementById("autoResumeNama").textContent = cache.user.nama || "-";
+            document.getElementById("autoResumeNip").textContent = cache.user.nip || "-";
+            document.getElementById("autoResumeSesi").textContent = currentSesiVal;
+            document.getElementById("modalAutoResume").classList.remove("hidden");
+          }
+        }
+      } catch (e) {
+        console.warn("Pemeriksaan auto-resume gagal:", e);
+      }
+    }
+
+    function dismissAutoResume() {
+      document.getElementById("modalAutoResume").classList.add("hidden");
+      autoResumeCandidate = null;
+    }
+
+    function confirmAutoResume() {
+      if (!autoResumeCandidate) return;
+      document.getElementById("modalAutoResume").classList.add("hidden");
+
+      document.getElementById("regNama").value = autoResumeCandidate.nama || "";
+      document.getElementById("regNip").value = autoResumeCandidate.nip || "";
+      document.getElementById("regSatker").value = autoResumeCandidate.satker || "";
+
+      handleGoToBriefing();
+    }
+
+    /**
      * INISIALISASI TELEMETRI PERANGKAT & JAM SERVER
      */
     window.addEventListener("DOMContentLoaded", () => {
       initTelemetry();
       initLiveClock();
+      checkAutoResumeOnLoad();
     });
 
     // #11: peringatan bila menutup / refresh saat ujian masih berjalan.
