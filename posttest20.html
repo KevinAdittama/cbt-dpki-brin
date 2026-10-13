@@ -1677,7 +1677,9 @@
     window.addEventListener("keydown", (e) => {
       if (!examState.isActive || examState.isFinished) return;
 
-            // Blokir shortcut navigasi mundur browser (Alt + Panah Kiri, Backspace)
+      const isEditable = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+
+      // Blokir shortcut navigasi mundur browser (Alt + Panah Kiri, Backspace)
       if (
         (e.altKey && (e.key === "ArrowLeft" || e.keyCode === 37)) ||
         (e.key === "Backspace" && !isEditable)
@@ -1709,7 +1711,6 @@
 
       // 3. Blokir Copy, Cut, Select All, Print, Save — TAPI izinkan Paste (Ctrl+V)
       //    #13: peserta boleh menempel NIP/NIK dari clipboard (18 digit rawan salah ketik).
-      const isEditable = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
       if (e.ctrlKey && (e.key === "v" || e.key === "V") && isEditable) {
         return true; // izinkan paste di field input
       }
