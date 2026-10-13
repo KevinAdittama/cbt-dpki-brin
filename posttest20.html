@@ -366,20 +366,7 @@
       <section id="screenExam" class="hidden w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden relative transition-all">
         
 
-        <!-- PROGRESS BAR SECTION (0% - 100%) -->
-        <div class="px-6 pt-4 pb-3 bg-white border-b border-slate-100 relative z-20">
-          <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
-            <span class="text-slate-600 flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-brinNavy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Kemajuan Pengerjaan:
-            </span>
-            <span id="examProgressText" class="text-brinNavy font-bold">0 dari 20 Soal Terjawab (0%)</span>
-          </div>
-          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200 shadow-inner">
-            <div id="examProgressBar" class="h-2.5 rounded-full bg-gradient-to-r from-brinNavy via-blue-600 to-emerald-500 transition-all duration-500 ease-out shadow-sm" style="width: 0%;"></div>
-          </div>
+        
         </div>
 
         <!-- TOP BAR RUANG UJIAN -->
@@ -416,13 +403,7 @@
 
         <!-- FOOTER RUANG UJIAN & NAVIGASI -->
         <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between relative z-20">
-          <button id="btnPrev" class="hidden" disabled
-            class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold text-sm transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            <span>Sebelumnya</span>
-          </button>
+          <div class="flex items-center text-xs text-slate-500 font-medium"><span class="inline-flex items-center gap-1.5"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Navigasi satu arah (anti-mundur)</span></div>
 
           <!-- GRID BULLET NAVIGATOR CEPAT -->
           <div id="quickNavContainer" class="hidden md:flex items-center gap-1.5">
@@ -1034,6 +1015,16 @@
     /**
      * INISIALISASI TELEMETRI PERANGKAT & JAM SERVER
      */
+    
+    // Kunci browser history agar tombol Back browser/HP dinonaktifkan
+    history.pushState(null, null, window.location.href);
+    window.addEventListener("popstate", () => {
+      if (examState.isActive && !examState.isFinished) {
+        history.pushState(null, null, window.location.href);
+        showToast("Navigasi kembali tidak diizinkan demi integritas ujian.", "warning");
+      }
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       initTelemetry();
       initLiveClock();
@@ -1229,17 +1220,8 @@
      * PROGRESS BAR UPDATE ENGINE
      */
     function updateProgressBar() {
-      const answeredCount = Object.keys(examState.userAnswers).length;
-      const totalQuestions = (examState.shuffledQuestions && examState.shuffledQuestions.length > 0)
-        ? examState.shuffledQuestions.length
-        : MASTER_QUESTIONS.length;
-      const percent = Math.round((answeredCount / totalQuestions) * 100);
-
-      const barEl = document.getElementById("examProgressBar");
-      const textEl = document.getElementById("examProgressText");
-
-      if (barEl) {
-        barEl.style.width = `${percent}%`;
+      // Indikator progress bar & counter telah dieliminasi sesuai kebutuhan sistem
+    }%`;
       }
       if (textEl) {
         textEl.textContent = `${answeredCount} dari ${totalQuestions} Soal Terjawab (${percent}%)`;
@@ -1705,6 +1687,15 @@
     window.addEventListener("keydown", (e) => {
       if (!examState.isActive || examState.isFinished) return;
 
+            // Blokir shortcut navigasi mundur browser (Alt + Panah Kiri, Backspace)
+      if (
+        (e.altKey && (e.key === "ArrowLeft" || e.keyCode === 37)) ||
+        (e.key === "Backspace" && !isEditable)
+      ) {
+        e.preventDefault();
+        return false;
+      }
+
       // 1. Blokir Tombol PrintScreen (dihitung sebagai pelanggaran)
       if (e.key === "PrintScreen" || e.keyCode === 44) {
         e.preventDefault();
@@ -1827,7 +1818,7 @@
       const status = document.getElementById("ansStatusLabel");
       status.textContent = savedAnswer ? "Sudah Terjawab" : "Belum Dijawab";
       status.className = savedAnswer ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold";
-      document.getElementById("btnPrev").classList.add("hidden");
+      const btnPrev = document.getElementById("btnPrev"); if (btnPrev) btnPrev.classList.add("hidden");
       const last = index === examState.shuffledQuestions.length - 1;
       document.getElementById("btnNext").classList.toggle("hidden", last);
       document.getElementById("btnSubmitExam").classList.toggle("hidden", !last);
@@ -1839,9 +1830,29 @@
     function selectOption(qIndex, selectedText) {
       examState.userAnswers[qIndex] = selectedText;
       saveToLocalStorage();
-      scheduleProgressSync();   // simpan ke server (debounce) -> pemulihan bila refresh
-      renderQuestion(qIndex);
-      updateProgressBar();
+      scheduleProgressSync();
+
+      // Perbarui tampilan kartu opsi aktif tanpa me-render ulang dan tanpa mereset timer soal!
+      const container = document.getElementById("optionsContainer");
+      if (container) {
+        const buttons = container.querySelectorAll("button");
+        buttons.forEach(btn => {
+          const optSpan = btn.querySelector("span:last-child");
+          const text = optSpan ? optSpan.textContent : "";
+          if (text === selectedText) {
+            btn.classList.add("border-brinNavy", "bg-blue-50");
+            btn.classList.remove("border-slate-200", "bg-white");
+          } else {
+            btn.classList.remove("border-brinNavy", "bg-blue-50");
+            btn.classList.add("border-slate-200", "bg-white");
+          }
+        });
+      }
+      const status = document.getElementById("ansStatusLabel");
+      if (status) {
+        status.textContent = "Sudah Terjawab";
+        status.className = "text-emerald-600 font-semibold";
+      }
     }
 
     /**
@@ -1871,7 +1882,7 @@
     }
 
     function navigateQuestion(step) {
-      if (step < 0) return;
+      if (step <= 0) return; // Strict: tidak ada navigasi mundur
       const nextIdx = examState.currentIndex + step;
       if (nextIdx < examState.shuffledQuestions.length) renderQuestion(nextIdx);
     }
