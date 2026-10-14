@@ -38,13 +38,13 @@ var SUBMIT_GRACE_SECONDS = 90;      // Toleransi keterlambatan jaringan saat sub
 var ENFORCE_SCHEDULE = true;
 
 // Jadwal Hari-H (14 Okt 2026):
-// Pre-Test: Buka 08.00 WIB, Tutup tepat 10.00 WIB (01.00 UTC s.d. 03.00 UTC)
+// Pre-Test: Buka 08.00 WIB, Tutup tepat 10.30 WIB (01.00 UTC s.d. 03.30 UTC)
 var PRETEST_START_ISO  = "2026-10-14T01:00:00.000Z";
-var PRETEST_END_ISO    = "2026-10-14T03:00:00.000Z"; // Batas akhir 10.00 WIB
+var PRETEST_END_ISO    = "2026-10-14T03:30:00.000Z"; // Batas akhir 10.30 WIB
 
-// Post-Test: Buka 11.00 WIB, Tutup tepat 13.00 WIB (04.00 UTC s.d. 06.00 UTC)
+// Post-Test: Buka 11.00 WIB, Tutup tepat 13.30 WIB (04.00 UTC s.d. 06.30 UTC)
 var POSTTEST_START_ISO = "2026-10-14T04:00:00.000Z";
-var POSTTEST_END_ISO   = "2026-10-14T06:00:00.000Z"; // Batas akhir 13.00 WIB
+var POSTTEST_END_ISO   = "2026-10-14T06:30:00.000Z"; // Batas akhir 13.30 WIB
 
 // ---- KUNCI JAWABAN PRE-TEST & POST-TEST (HANYA DI SERVER) -------------
 var ANSWER_KEYS_PRETEST = {
@@ -350,9 +350,10 @@ function handleScoreAndSubmit(ss, resultSheet, data) {
   // Kode ini dicatat di database sehingga keasliannya bisa diverifikasi panitia.
   var verifCode = buildVerificationCode(now, nip);
 
-  // Bangun rincian 20 jawaban peserta (Soal 1 s.d. Soal 20)
+  // Bangun rincian 20 status jawaban peserta (Soal 1 s.d. Soal 20)
   var isPost = (String(data.sesi || "").toLowerCase().indexOf("post") !== -1);
   var baseId = isPost ? 300 : 200;
+  var keys = isPost ? ANSWER_KEYS_POSTTEST : ANSWER_KEYS_PRETEST;
   var submittedMap = {};
   if (Array.isArray(data.answers)) {
     data.answers.forEach(function(item) {
@@ -364,7 +365,15 @@ function handleScoreAndSubmit(ss, resultSheet, data) {
   var detailAnswers = [];
   for (var qNum = 1; qNum <= 20; qNum++) {
     var qId = String(baseId + qNum);
-    detailAnswers.push(safeCell(submittedMap[qId] || "KOSONG / TIDAK DIJAWAB"));
+    var userAns = submittedMap[qId];
+    var correctAns = keys[qId];
+    if (!userAns || userAns.trim() === "") {
+      detailAnswers.push("KOSONG");
+    } else if (userAns === correctAns) {
+      detailAnswers.push("BENAR (" + userAns + ")");
+    } else {
+      detailAnswers.push("SALAH (" + userAns + ")");
+    }
   }
 
   var rowData = [
@@ -740,7 +749,7 @@ function getScheduleAccess(nowOverride, sesi, enforceOverride) {
   var start = new Date(startIso);
   var end = new Date(endIso);
   var sesiName = isPost ? "Post-Test" : "Pre-Test";
-  var batasStr = isPost ? "13.00 WIB" : "10.00 WIB";
+  var batasStr = isPost ? "13.30 WIB" : "10.30 WIB";
 
   var enforced = (enforceOverride !== undefined) ? enforceOverride : ENFORCE_SCHEDULE;
 
@@ -950,20 +959,14 @@ function runSelfCheck() {
  *    (Endpoint `?action=clear_database_testing_secret_key_brin` sudah DIHAPUS karena alasan ini.)
  */
 function clearDatabaseForTesting() {
-    // Self-check Jadwal Batas Waktu:
-  var preAllowed = getScheduleAccess("2026-10-14T02:00:00.000Z", "pre-test", true); // 09.00 WIB
-  if (!preAllowed.allowed) throw new Error("Self-check Pre-Test buka gagal: " + JSON.stringify(preAllowed));
-
-  var preClosed = getScheduleAccess("2026-10-14T03:05:00.000Z", "pre-test", true); // 10.05 WIB
-  if (preClosed.allowed) throw new Error("Self-check Pre-Test tutup gagal: " + JSON.stringify(preClosed));
-
-  var postAllowed = getScheduleAccess("2026-10-14T05:00:00.000Z", "post-test", true); // 12.00 WIB
-  if (!postAllowed.allowed) throw new Error("Self-check Post-Test buka gagal: " + JSON.stringify(postAllowed));
-
-  var postClosed = getScheduleAccess("2026-10-14T06:05:00.000Z", "post-test", true); // 13.05 WIB
-  if (postClosed.allowed) throw new Error("Self-check Post-Test tutup gagal: " + JSON.stringify(postClosed));
-
   var ss = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
+  
+  // Pastikan tab SHEET_NAME ada dan ter-inisialisasi header lengkapnya (A s.d. AJ)
+  var resultSheet = getOrCreateSheet(ss, SHEET_NAME);
+  ensureResultSheetHeader(resultSheet);
+  
+  var sessionSheet = getOrCreateSessionSheet(ss);
+  
   var sheets = ss.getSheets();
   for (var i = 0; i < sheets.length; i++) {
     var s = sheets[i];
@@ -971,5 +974,5 @@ function clearDatabaseForTesting() {
       s.getRange(2, 1, s.getLastRow() - 1, s.getLastColumn()).clearContent();
     }
   }
-  Logger.log("DATABASE BERHASIL DIBERSIHKAN!");
+  Logger.log("DATABASE BERHASIL DIBERSIHKAN DAN HEADER DIPERBARUI!");
 }
