@@ -42,8 +42,8 @@ var ENFORCE_SCHEDULE = true;
 var PRETEST_START_ISO  = "2026-10-14T01:00:00.000Z";
 var PRETEST_END_ISO    = "2026-10-14T03:30:00.000Z"; // Batas akhir 10.30 WIB
 
-// Post-Test: Buka 10.30 WIB, Tutup tepat 13.30 WIB (03.30 UTC s.d. 06.30 UTC)
-var POSTTEST_START_ISO = "2026-10-14T03:30:00.000Z";
+// Post-Test: Buka 10.00 WIB, Tutup tepat 13.30 WIB (03.00 UTC s.d. 06.30 UTC)
+var POSTTEST_START_ISO = "2026-10-14T03:00:00.000Z"; // Dibuka mulai 10.00 WIB agar bisa langsung dites sekarang
 var POSTTEST_END_ISO   = "2026-10-14T06:30:00.000Z"; // Batas akhir 13.30 WIB
 
 // ---- KUNCI JAWABAN PRE-TEST & POST-TEST (HANYA DI SERVER) -------------
