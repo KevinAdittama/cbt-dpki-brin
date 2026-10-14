@@ -26,32 +26,74 @@
  * ============================================================================
  */
 
-var SHEET_NAME = "Hasil_Ujian";
-var SESSION_SHEET_NAME = "Sesi_Aktif";
+var SHEET_NAME = "Hasil_Ujian_20Soal";
+var SESSION_SHEET_NAME = "Sesi_Aktif_20Soal";
 
 // ---- DURASI UJIAN (SATU-SATUNYA SUMBER KEBENARAN) -------------------------
-var EXAM_DURATION_SECONDS = 10 * 60; // 10 menit. Ubah di sini bila perlu.
+var EXAM_DURATION_SECONDS = 20 * 45; // batas maksimum keseluruhan; timer per soal dikendalikan frontend.
 var SUBMIT_GRACE_SECONDS = 90;      // Toleransi keterlambatan jaringan saat submit.
 
 // ---- GERBANG JADWAL --------------------------------------------------------
 // false = mode uji coba (gerbang selalu terbuka). Set true saat hari-H.
-var ENFORCE_SCHEDULE = false;
-var EXAM_START_ISO = "2026-10-14T02:00:00.000Z"; // 09.00 WIB / 10.00 WITA / 11.00 WIT
-var EXAM_END_ISO = "2026-10-14T02:30:00.000Z";   // 09.30 WIB / 10.30 WITA / 11.30 WIT
+var ENFORCE_SCHEDULE = true;
 
-// ---- KUNCI JAWABAN (HANYA DI SERVER) --------------------------------------
-var ANSWER_KEYS = {
-  "1": "Membantu pembaca melihat pola, tren, dan kesimpulan data dengan cepat",
-  "2": "Microsoft Excel",
-  "3": "Pivot Chart",
-  "4": "Conditional Formatting (Format Bersyarat)",
-  "5": "Diagram Garis (Line Chart)",
-  "6": "Diagram Lingkaran / Donat (Pie / Donut Chart)",
-  "7": "Karena 25 irisan membuat grafik terlalu padat dan label nama spesies sulit dibaca",
-  "8": "Diagram Batang (Bar / Column Chart)",
-  "9": "Perlakuan B terlihat berkali-kali lipat lebih unggul dari A, padahal selisih aslinya hanya 2 kg",
-  "10": "Judul Grafik (Chart Title) dan label data yang jelas"
+// Jadwal Hari-H (14 Okt 2026):
+// Pre-Test: Buka 08.00 WIB, Tutup tepat 10.00 WIB (01.00 UTC s.d. 03.00 UTC)
+var PRETEST_START_ISO  = "2026-10-14T01:00:00.000Z";
+var PRETEST_END_ISO    = "2026-10-14T03:00:00.000Z"; // Batas akhir 10.00 WIB
+
+// Post-Test: Buka 11.00 WIB, Tutup tepat 13.00 WIB (04.00 UTC s.d. 06.00 UTC)
+var POSTTEST_START_ISO = "2026-10-14T04:00:00.000Z";
+var POSTTEST_END_ISO   = "2026-10-14T06:00:00.000Z"; // Batas akhir 13.00 WIB
+
+// ---- KUNCI JAWABAN PRE-TEST & POST-TEST (HANYA DI SERVER) -------------
+var ANSWER_KEYS_PRETEST = {
+  "201": "Data merupakan fakta yang tercatat, informasi adalah data yang diberi konteks, dan insight merupakan temuan penting hasil interpretasi",
+  "202": "merumuskan pertanyaan yang ingin dijawab",
+  "203": "Ketika pembaca ingin lebih cepat melihat pola dan perbandingan",
+  "204": "horizontal bar chart",
+  "205": "bar chart atau pie chart",
+  "206": "line chart atau column chart",
+  "207": "jenis grafik dipilih berdasarkan pertanyaan, karakter data, dan pola yang ingin ditunjukkan",
+  "208": "menggunakan warna netral dan memberi warna khusus pada bagian yang perlu disorot",
+  "209": "Fagaceae merupakan famili dengan jumlah record terbanyak",
+  "210": "satu visual sebaiknya memiliki pesan utama yang jelas",
+  "211": "Power BI atau Tableau",
+  "212": "biaya, output, privasi data, kemudahan, dan kebutuhan penggunaan",
+  "213": "terdapat peningkatan permintaan data, tetapi penyebabnya memerlukan bukti tambahan",
+  "214": "menjelaskan arti atau relevansi dari temuan",
+  "215": "memeriksa kelengkapan data dan menyebutkan keterbatasannya dalam interpretasi",
+  "216": "Untuk menghindari distorsi visual yang membuat perbedaan kecil terlihat sangat drastis",
+  "217": "Menghapus elemen dekoratif yang tidak perlu agar fokus pembaca tetap pada batang data",
+  "218": "Point map (peta sebaran titik)",
+  "219": "Menandai dan memverifikasi data tersebut sebagai anomali/salah ketik (typo) pada tahap pembersihan data",
+  "220": "Pemotongan rentang waktu secara sengaja (cherry-picking) yang menyesatkan audiens"
 };
+
+var ANSWER_KEYS_POSTTEST = {
+  "301": "Sebaran record antar famili tidak merata dan beberapa famili tampak lebih dominan",
+  "302": "menentukan kebutuhan informasi atau pertanyaan yang akan dijawab",
+  "303": "menggunakan grafik untuk pola dan tabel untuk rincian",
+  "304": "bar chart yang diurutkan",
+  "305": "bar chart",
+  "306": "line chart",
+  "307": "pemilihan visual harus mengikuti pertanyaan dan karakter data",
+  "308": "mengurutkan kategori berdasarkan nilai jika tujuan utamanya membandingkan ranking",
+  "309": "karena judul tersebut langsung menyampaikan temuan utama",
+  "310": "judul jelas, warna digunakan selektif, kategori mudah dibandingkan, dan sumber data disebutkan",
+  "311": "Excel",
+  "312": "mempertimbangkan lokasi penyimpanan, hak akses, cara berbagi, dan tata kelola data",
+  "313": "kategori A memiliki nilai tertinggi pada data yang ditampilkan; arti dan penyebabnya perlu konteks tambahan",
+  "314": "merumuskan tindak lanjut atau pertanyaan berikutnya",
+  "315": "Insight adalah hasil interpretasi dari data, sedangkan message adalah inti yang dipilih untuk dikomunikasikan kepada audiens",
+  "316": "Pembaca mengira perbedaan antar kategori sangat besar padahal perbedaannya relatif kecil",
+  "317": "Sebagian besar elemen visual yang ditampilkan harus didedikasikan langsung untuk menyampaikan data, bukan hiasan",
+  "318": "Choropleth map (peta wilayah dengan gradasi warna sesuai kepadatan/jumlah)",
+  "319": "Memeriksa apakah data tersebut anomali input atau temuan ilmiah yang nyata sebelum mengambil keputusan",
+  "320": "Menampilkan rentang data yang lengkap dan relevan dengan konteks analisis, bukan hanya periode yang menguntungkan"
+};
+
+var ANSWER_KEYS = Object.assign({}, ANSWER_KEYS_PRETEST, ANSWER_KEYS_POSTTEST);
 
 /**
  * Endpoint POST utama.
@@ -68,7 +110,7 @@ function doPost(e) {
   // ---------------------------------------------------------------------------
   if (action === "HEARTBEAT") {
     try {
-      var ssHb = SpreadsheetApp.getActiveSpreadsheet();
+      var ssHb = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
       return createJsonResponse(handleHeartbeat(ssHb, data));
     } catch (errHb) {
       return createJsonResponse({ status: "error", message: "Gagal heartbeat: " + errHb.toString() });
@@ -87,7 +129,20 @@ function doPost(e) {
   }
 
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+      // Self-check Jadwal Batas Waktu:
+  var preAllowed = getScheduleAccess("2026-10-14T02:00:00.000Z", "pre-test", true); // 09.00 WIB
+  if (!preAllowed.allowed) throw new Error("Self-check Pre-Test buka gagal: " + JSON.stringify(preAllowed));
+
+  var preClosed = getScheduleAccess("2026-10-14T03:05:00.000Z", "pre-test", true); // 10.05 WIB
+  if (preClosed.allowed) throw new Error("Self-check Pre-Test tutup gagal: " + JSON.stringify(preClosed));
+
+  var postAllowed = getScheduleAccess("2026-10-14T05:00:00.000Z", "post-test", true); // 12.00 WIB
+  if (!postAllowed.allowed) throw new Error("Self-check Post-Test buka gagal: " + JSON.stringify(postAllowed));
+
+  var postClosed = getScheduleAccess("2026-10-14T06:05:00.000Z", "post-test", true); // 13.05 WIB
+  if (postClosed.allowed) throw new Error("Self-check Post-Test tutup gagal: " + JSON.stringify(postClosed));
+
+  var ss = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
     var resultSheet = getOrCreateSheet(ss, SHEET_NAME);
 
     if (action === "CHECK_NIP") {
@@ -129,10 +184,30 @@ function doPost(e) {
 function doGet(e) {
   var params = (e && e.parameter) || {};
   var action = String(params.action || "").toLowerCase();
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Self-check Jadwal Batas Waktu:
+  var preAllowed = getScheduleAccess("2026-10-14T02:00:00.000Z", "pre-test", true); // 09.00 WIB
+  if (!preAllowed.allowed) throw new Error("Self-check Pre-Test buka gagal: " + JSON.stringify(preAllowed));
+
+  var preClosed = getScheduleAccess("2026-10-14T03:05:00.000Z", "pre-test", true); // 10.05 WIB
+  if (preClosed.allowed) throw new Error("Self-check Pre-Test tutup gagal: " + JSON.stringify(preClosed));
+
+  var postAllowed = getScheduleAccess("2026-10-14T05:00:00.000Z", "post-test", true); // 12.00 WIB
+  if (!postAllowed.allowed) throw new Error("Self-check Post-Test buka gagal: " + JSON.stringify(postAllowed));
+
+  var postClosed = getScheduleAccess("2026-10-14T06:05:00.000Z", "post-test", true); // 13.05 WIB
+  if (postClosed.allowed) throw new Error("Self-check Post-Test tutup gagal: " + JSON.stringify(postClosed));
+
+  var ss = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
 
   if (action === "check_nip") {
     return createJsonResponse(handleCheckNip(ss, getOrCreateSheet(ss, SHEET_NAME), params, true));
+  }
+
+  if (action === "test_schedule") {
+    return createJsonResponse({
+      status: "success",
+      test_schedule: getScheduleAccess(params.now, params.sesi, params.enforce === "true")
+    });
   }
 
   if (action === "server_status") {
@@ -142,7 +217,8 @@ function doGet(e) {
       server_epoch_ms: new Date().getTime(),
       exam_duration_seconds: EXAM_DURATION_SECONDS,
       schedule_enforced: ENFORCE_SCHEDULE,
-      access: getScheduleAccess()
+      access_pretest: getScheduleAccess(null, "pre-test"),
+      access_posttest: getScheduleAccess(null, "post-test")
     });
   }
 
@@ -168,7 +244,7 @@ function handleCheckNip(ss, resultSheet, data, readOnly) {
   }
 
   var existing = findExistingSubmission(resultSheet, nip, sesi);
-  var access = getScheduleAccess();
+  var access = getScheduleAccess(null, sesi);
 
   if (existing.exists) {
     return {
@@ -245,7 +321,7 @@ function handleScoreAndSubmit(ss, resultSheet, data) {
     };
   }
 
-  var scored = scoreAnswers(data.answers);
+  var scored = scoreAnswers(data.answers, sesi);
   if (!scored.valid) {
     return { status: "rejected", message: scored.message };
   }
@@ -274,7 +350,24 @@ function handleScoreAndSubmit(ss, resultSheet, data) {
   // Kode ini dicatat di database sehingga keasliannya bisa diverifikasi panitia.
   var verifCode = buildVerificationCode(now, nip);
 
-  resultSheet.appendRow([
+  // Bangun rincian 20 jawaban peserta (Soal 1 s.d. Soal 20)
+  var isPost = (String(data.sesi || "").toLowerCase().indexOf("post") !== -1);
+  var baseId = isPost ? 300 : 200;
+  var submittedMap = {};
+  if (Array.isArray(data.answers)) {
+    data.answers.forEach(function(item) {
+      if (item && item.question_id !== undefined) {
+        submittedMap[String(item.question_id)] = String(item.answer || "");
+      }
+    });
+  }
+  var detailAnswers = [];
+  for (var qNum = 1; qNum <= 20; qNum++) {
+    var qId = String(baseId + qNum);
+    detailAnswers.push(safeCell(submittedMap[qId] || "KOSONG / TIDAK DIJAWAB"));
+  }
+
+  var rowData = [
     now,
     "'" + nip,
     safeCell(data.nama),
@@ -291,7 +384,9 @@ function handleScoreAndSubmit(ss, resultSheet, data) {
     safeCell(data.browser || "-"),
     safeCell(data.resolusi || "-"),
     verifCode
-  ]);
+  ].concat(detailAnswers);
+
+  resultSheet.appendRow(rowData);
 
   markSessionFinished(sessionSheet, sessionRow.rowNumber, scored.score, now);
 
@@ -519,7 +614,11 @@ function getOrCreateSessionSheet(ss) {
 }
 
 function getOrCreateSheet(ss, name) {
-  return ss.getSheetByName(name) || ss.getActiveSheet();
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
+  return sheet;
 }
 
 /**
@@ -531,7 +630,11 @@ function ensureResultSheetHeader(sheet) {
     "Timestamp", "NIP", "Nama_Lengkap", "Unit_Kerja", "Sesi_Ujian",
     "Skor_Akhir", "Jumlah_Benar", "Jumlah_Salah", "Durasi_Pengerjaan",
     "Pelanggaran_Tab", "Status_Integritas", "IP_Address", "Sistem_Operasi",
-    "Peramban_Browser", "Resolusi_Layar", "Kode_Verifikasi"
+    "Peramban_Browser", "Resolusi_Layar", "Kode_Verifikasi",
+    "Jwb_Soal_1", "Jwb_Soal_2", "Jwb_Soal_3", "Jwb_Soal_4", "Jwb_Soal_5",
+    "Jwb_Soal_6", "Jwb_Soal_7", "Jwb_Soal_8", "Jwb_Soal_9", "Jwb_Soal_10",
+    "Jwb_Soal_11", "Jwb_Soal_12", "Jwb_Soal_13", "Jwb_Soal_14", "Jwb_Soal_15",
+    "Jwb_Soal_16", "Jwb_Soal_17", "Jwb_Soal_18", "Jwb_Soal_19", "Jwb_Soal_20"
   ];
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
@@ -627,30 +730,45 @@ function markSessionFinished(sheet, rowNumber, skor, when) {
  * GERBANG JADWAL (waktu SERVER)
  * ---------------------------------------------------------------------------
  */
-function getScheduleAccess(nowOverride) {
+function getScheduleAccess(nowOverride, sesi, enforceOverride) {
   var now = nowOverride ? new Date(nowOverride) : new Date();
-  var start = new Date(EXAM_START_ISO);
-  var end = new Date(EXAM_END_ISO);
+  var s = String(sesi || "").toLowerCase();
+  var isPost = (s.indexOf("post") !== -1);
 
-  if (!ENFORCE_SCHEDULE) {
+  var startIso = isPost ? POSTTEST_START_ISO : PRETEST_START_ISO;
+  var endIso = isPost ? POSTTEST_END_ISO : PRETEST_END_ISO;
+  var start = new Date(startIso);
+  var end = new Date(endIso);
+  var sesiName = isPost ? "Post-Test" : "Pre-Test";
+  var batasStr = isPost ? "13.00 WIB" : "10.00 WIB";
+
+  var enforced = (enforceOverride !== undefined) ? enforceOverride : ENFORCE_SCHEDULE;
+
+  if (!enforced) {
     return {
       allowed: true,
       mode: "trial",
-      message: "Gerbang server terbuka dalam mode uji coba.",
-      server_time: now.toISOString()
+      message: "Gerbang server terbuka dalam mode uji coba (" + sesiName + ").",
+      server_time: now.toISOString(),
+      sesi: sesiName
     };
   }
 
-  var allowed = now >= start && now <= end;
+  var allowed = (now >= start && now <= end);
+  var message = allowed
+    ? "Gerbang ujian " + sesiName + " terbuka."
+    : (now < start
+        ? "Gerbang ujian " + sesiName + " belum dibuka."
+        : "Gerbang ujian " + sesiName + " telah ditutup. Batas akses maksimal pukul " + batasStr + ".");
+
   return {
     allowed: allowed,
     mode: "scheduled",
-    message: allowed
-      ? "Gerbang ujian terbuka."
-      : "Gerbang ujian tertutup. Akses hanya 09.00-09.30 WIB / 10.00-10.30 WITA / 11.00-11.30 WIT.",
+    message: message,
     server_time: now.toISOString(),
     opens_at: start.toISOString(),
-    closes_at: end.toISOString()
+    closes_at: end.toISOString(),
+    sesi: sesiName
   };
 }
 
@@ -659,10 +777,14 @@ function getScheduleAccess(nowOverride) {
  * PENILAIAN & INTEGRITAS
  * ---------------------------------------------------------------------------
  */
-function scoreAnswers(answers) {
+function scoreAnswers(answers, sesi) {
   if (!Array.isArray(answers)) {
     return { valid: false, message: "Format jawaban tidak valid." };
   }
+
+  var isPost = (String(sesi || "").toLowerCase().indexOf("post") !== -1);
+  var keys = isPost ? ANSWER_KEYS_POSTTEST : ANSWER_KEYS_PRETEST;
+  var ids = Object.keys(keys);
 
   var submitted = {};
   answers.forEach(function(item) {
@@ -671,18 +793,21 @@ function scoreAnswers(answers) {
     }
   });
 
-  var ids = Object.keys(ANSWER_KEYS);
   var correct = 0;
   ids.forEach(function(id) {
-    if (submitted[id] === ANSWER_KEYS[id]) correct++;
+    if (submitted[id] === keys[id]) correct++;
   });
+
+  var total = ids.length || 20;
+  var wrong = total - correct;
+  var score = Math.round((correct / total) * 100);
 
   return {
     valid: true,
-    total: ids.length,
+    total: total,
     correct: correct,
-    wrong: ids.length - correct,
-    score: Math.round((correct / ids.length) * 100)
+    wrong: wrong,
+    score: score
   };
 }
 
@@ -771,12 +896,20 @@ function createJsonResponse(obj) {
  * Uji internal. Jalankan sekali dari editor Apps Script untuk memastikan logika benar.
  */
 function runSelfCheck() {
-  var allCorrect = Object.keys(ANSWER_KEYS).map(function(id) {
-    return { question_id: Number(id), answer: ANSWER_KEYS[id] };
+  var allCorrectPre = Object.keys(ANSWER_KEYS_PRETEST).map(function(id) {
+    return { question_id: Number(id), answer: ANSWER_KEYS_PRETEST[id] };
   });
-  var scored = scoreAnswers(allCorrect);
-  if (!scored.valid || scored.score !== 100 || scored.correct !== 10) {
-    throw new Error("Self-check penilaian gagal: " + JSON.stringify(scored));
+  var scoredPre = scoreAnswers(allCorrectPre, "pre-test");
+  if (!scoredPre.valid || scoredPre.score !== 100 || scoredPre.correct !== 20) {
+    throw new Error("Self-check pre-test gagal: " + JSON.stringify(scoredPre));
+  }
+
+  var allCorrectPost = Object.keys(ANSWER_KEYS_POSTTEST).map(function(id) {
+    return { question_id: Number(id), answer: ANSWER_KEYS_POSTTEST[id] };
+  });
+  var scoredPost = scoreAnswers(allCorrectPost, "post-test");
+  if (!scoredPost.valid || scoredPost.score !== 100 || scoredPost.correct !== 20) {
+    throw new Error("Self-check post-test gagal: " + JSON.stringify(scoredPost));
   }
 
   var clean = buildIntegrityStatus(0, "SELESAI NORMAL", 0, SUBMIT_GRACE_SECONDS);
@@ -785,7 +918,20 @@ function runSelfCheck() {
   var late = buildIntegrityStatus(0, "SELESAI NORMAL", 600, SUBMIT_GRACE_SECONDS);
   if (late.indexOf("MELEBIHI BATAS WAKTU") === -1) throw new Error("Self-check keterlambatan gagal: " + late);
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Self-check Jadwal Batas Waktu:
+  var preAllowed = getScheduleAccess("2026-10-14T02:00:00.000Z", "pre-test", true); // 09.00 WIB
+  if (!preAllowed.allowed) throw new Error("Self-check Pre-Test buka gagal: " + JSON.stringify(preAllowed));
+
+  var preClosed = getScheduleAccess("2026-10-14T03:05:00.000Z", "pre-test", true); // 10.05 WIB
+  if (preClosed.allowed) throw new Error("Self-check Pre-Test tutup gagal: " + JSON.stringify(preClosed));
+
+  var postAllowed = getScheduleAccess("2026-10-14T05:00:00.000Z", "post-test", true); // 12.00 WIB
+  if (!postAllowed.allowed) throw new Error("Self-check Post-Test buka gagal: " + JSON.stringify(postAllowed));
+
+  var postClosed = getScheduleAccess("2026-10-14T06:05:00.000Z", "post-test", true); // 13.05 WIB
+  if (postClosed.allowed) throw new Error("Self-check Post-Test tutup gagal: " + JSON.stringify(postClosed));
+
+  var ss = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
   var sessionSheet = getOrCreateSessionSheet(ss);
   Logger.log("SELF-CHECK PASS | skor=" + scored.score +
              " | sheet sesi=" + sessionSheet.getName() +
@@ -804,7 +950,20 @@ function runSelfCheck() {
  *    (Endpoint `?action=clear_database_testing_secret_key_brin` sudah DIHAPUS karena alasan ini.)
  */
 function clearDatabaseForTesting() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Self-check Jadwal Batas Waktu:
+  var preAllowed = getScheduleAccess("2026-10-14T02:00:00.000Z", "pre-test", true); // 09.00 WIB
+  if (!preAllowed.allowed) throw new Error("Self-check Pre-Test buka gagal: " + JSON.stringify(preAllowed));
+
+  var preClosed = getScheduleAccess("2026-10-14T03:05:00.000Z", "pre-test", true); // 10.05 WIB
+  if (preClosed.allowed) throw new Error("Self-check Pre-Test tutup gagal: " + JSON.stringify(preClosed));
+
+  var postAllowed = getScheduleAccess("2026-10-14T05:00:00.000Z", "post-test", true); // 12.00 WIB
+  if (!postAllowed.allowed) throw new Error("Self-check Post-Test buka gagal: " + JSON.stringify(postAllowed));
+
+  var postClosed = getScheduleAccess("2026-10-14T06:05:00.000Z", "post-test", true); // 13.05 WIB
+  if (postClosed.allowed) throw new Error("Self-check Post-Test tutup gagal: " + JSON.stringify(postClosed));
+
+  var ss = SpreadsheetApp.openById("1AElpVRABwqbPOoyv9GiAxPCh0T1oNL4qcNMbeQb9V_k");
   var sheets = ss.getSheets();
   for (var i = 0; i < sheets.length; i++) {
     var s = sheets[i];
