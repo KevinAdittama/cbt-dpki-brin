@@ -1292,12 +1292,28 @@
     const LOGIN_JITTER_MAX_MS = 20000;
     function waitForLoginQueue() {
       const delayMs = Math.floor(Math.random() * (LOGIN_JITTER_MAX_MS + 1));
-      const seconds = Math.max(1, Math.ceil(delayMs / 1000));
+      const deadline = Date.now() + delayMs;
       const text = document.getElementById("briefingStatusText");
       const badge = document.getElementById("briefingStatusBadge");
-      if (text) text.textContent = `Antrean verifikasi otomatis (${seconds} detik). Mohon jangan refresh.`;
-      if (badge) badge.textContent = "Antrean verifikasi";
-      return new Promise(resolve => setTimeout(resolve, delayMs));
+
+      const updateCountdown = () => {
+        const remainingMs = Math.max(0, deadline - Date.now());
+        const seconds = Math.ceil(remainingMs / 1000);
+        if (text) {
+          text.textContent = remainingMs > 0
+            ? `Antrean verifikasi otomatis: ${seconds} detik. Mohon jangan refresh.`
+            : "Memverifikasi sekarang...";
+        }
+        if (badge) badge.textContent = remainingMs > 0 ? "Antrean verifikasi" : "Memverifikasi sekarang";
+      };
+
+      updateCountdown();
+      const countdownTimer = setInterval(updateCountdown, 250);
+      return new Promise(resolve => setTimeout(() => {
+        clearInterval(countdownTimer);
+        updateCountdown();
+        resolve();
+      }, delayMs));
     }
 
     function handleGoToBriefing() {
